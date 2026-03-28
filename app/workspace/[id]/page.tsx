@@ -102,15 +102,14 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
                   澄清回答已经保存完成。下一步，我们会根据这些回答生成一份结构化设计书。
                 </p>
                 <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
-                  设计书生成功能即将开放，这里先保留为下一阶段入口占位。
+                  你现在已经可以先查看一份静态整理版设计书预览，帮助你确认方向是否足够清晰。
                 </div>
-                <button
-                  type="button"
-                  disabled
-                  className="w-full rounded-full bg-slate-300 px-4 py-3 text-sm font-medium text-white"
+                <Link
+                  href={`/workspace/${project.id}/design`}
+                  className="inline-flex w-full justify-center rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
                 >
-                  设计书生成即将开放
-                </button>
+                  查看设计书预览
+                </Link>
               </>
             ) : (
               <>
