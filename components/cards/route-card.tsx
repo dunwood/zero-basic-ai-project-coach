@@ -1,22 +1,16 @@
-type RouteCardProps = {
-  name: string;
-  summary: string;
-  fitFor: string;
-  requirement: string;
-  difficulty: string;
-  tag: string;
-};
+import type { RouteCardData } from "@/lib/types/route";
 
 export function RouteCard({
+  id,
   name,
   summary,
   fitFor,
   requirement,
   difficulty,
   tag,
-}: RouteCardProps) {
+}: RouteCardData) {
   return (
-    <article className="surface-panel flex h-full flex-col gap-5 p-6">
+    <article className="surface-panel flex h-full flex-col gap-5 p-6" data-route-id={id}>
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <span className="inline-flex rounded-full bg-accent px-3 py-1 text-xs font-semibold text-blue-800">

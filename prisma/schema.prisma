@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Route {
+  id                String      @id @default(cuid())
+  name              String
+  modelName         String
+  toolName          String
+  shortDescription  String
+  targetUsers       String
+  usageCondition    String
+  installDifficulty String
+  recommendationTag String
+  sortOrder         Int
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  steps             RouteStep[]
+
+  @@index([sortOrder])
+}
+
+model RouteStep {
+  id                  String   @id @default(cuid())
+  routeId             String
+  stepOrder           Int
+  title               String
+  content             String
+  successHint         String?
+  troubleshootingHint String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  route               Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId])
+  @@unique([routeId, stepOrder])
+}
