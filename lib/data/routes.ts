@@ -1,0 +1,68 @@
+export const routeFilters = [
+  "零基础优先",
+  "简单优先",
+  "能力优先",
+  "国内优先",
+  "国际路线",
+  "IDE",
+  "终端",
+] as const;
+
+export const routesData = [
+  {
+    name: "DeepSeek + OpenCode",
+    summary: "适合想先用中文环境起步，并且希望工具体验尽量轻量的人。",
+    fitFor: "想先快速开始，偏向本地工具体验，对终端接受度中等的用户。",
+    requirement: "需要能完成基础安装，并愿意跟着步骤配置一次工具。",
+    difficulty: "安装难度：中",
+    tag: "零基础可尝试",
+  },
+  {
+    name: "通义千问 + 通义灵码",
+    summary: "更贴近国内常见使用环境，适合希望界面友好、上手路径清晰的人。",
+    fitFor: "更喜欢图形界面、中文说明和相对熟悉生态的入门用户。",
+    requirement: "需要注册相关账号，并完成插件或工具接入。",
+    difficulty: "安装难度：低",
+    tag: "国内优先",
+  },
+  {
+    name: "豆包 / 火山方舟 + TRAE",
+    summary: "适合想尝试国内路线，同时希望保留一定扩展空间的人。",
+    fitFor: "愿意比较不同工具方案，希望边试边找到适合自己的用户。",
+    requirement: "需要根据所选服务完成账户与工具设置。",
+    difficulty: "安装难度：中",
+    tag: "路线灵活",
+  },
+  {
+    name: "百度千帆 / 文心 + 文心快码",
+    summary: "适合已经在国内云生态里活动，想优先走熟悉平台的人。",
+    fitFor: "偏向国内产品、希望从已有账号体系继续往下走的用户。",
+    requirement: "需要具备对应平台账号，并接受其接入方式。",
+    difficulty: "安装难度：中",
+    tag: "平台一致性",
+  },
+  {
+    name: "ChatGPT + Codex CLI",
+    summary: "适合愿意接触终端，希望体验更强执行能力路线的人。",
+    fitFor: "接受英文产品界面，愿意学习少量命令行操作的用户。",
+    requirement: "需要网络条件允许，并能接受命令行环境。",
+    difficulty: "安装难度：中高",
+    tag: "能力优先",
+  },
+  {
+    name: "Claude + Claude Code",
+    summary: "适合重视代码理解、协作式开发体验和任务推进节奏的人。",
+    fitFor: "希望让 AI 更像搭档，愿意接受终端工作流的用户。",
+    requirement: "需要完成命令行安装，并适应相关使用方式。",
+    difficulty: "安装难度：中高",
+    tag: "开发协作感强",
+  },
+  {
+    name: "Gemini + Gemini CLI",
+    summary: "适合想体验另一条国际路线，并关注大模型工具整合能力的人。",
+    fitFor: "愿意对比不同国际模型方案，能接受一定配置过程的用户。",
+    requirement: "需要完成账号与 CLI 安装配置。",
+    difficulty: "安装难度：中高",
+    tag: "国际路线",
+  },
+] as const;
