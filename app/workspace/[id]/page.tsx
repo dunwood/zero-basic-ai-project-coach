@@ -104,12 +104,20 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
                 <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
                   你现在已经可以先查看一份静态整理版设计书预览，帮助你确认方向是否足够清晰。
                 </div>
-                <Link
-                  href={`/workspace/${project.id}/design`}
-                  className="inline-flex w-full justify-center rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-                >
-                  查看设计书预览
-                </Link>
+                <div className="flex flex-col gap-3">
+                  <Link
+                    href={`/workspace/${project.id}/design`}
+                    className="inline-flex w-full justify-center rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                  >
+                    查看设计书预览
+                  </Link>
+                  <Link
+                    href={`/workspace/${project.id}/tasks`}
+                    className="inline-flex w-full justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+                  >
+                    查看任务清单
+                  </Link>
+                </div>
               </>
             ) : (
               <>

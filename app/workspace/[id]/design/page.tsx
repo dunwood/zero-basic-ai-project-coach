@@ -181,6 +181,12 @@ export default async function DesignPage({ params }: DesignPageProps) {
                 返回工作区
               </Link>
               <Link
+                href={`/workspace/${project.id}/tasks`}
+                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                进入任务清单
+              </Link>
+              <Link
                 href={`/workspace/${project.id}/clarify`}
                 className="inline-flex justify-center rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
               >
