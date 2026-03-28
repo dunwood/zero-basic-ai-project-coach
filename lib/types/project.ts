@@ -50,7 +50,7 @@ export type RecentProjectSummary = {
   };
 };
 
-export type ProjectStageKey = "created" | "clarify" | "design" | "tasks";
+export type ProjectStageKey = "created" | "clarify" | "design" | "review" | "tasks";
 
 export type ProjectStageState = "completed" | "current" | "upcoming";
 

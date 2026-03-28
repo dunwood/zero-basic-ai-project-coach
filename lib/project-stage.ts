@@ -23,12 +23,20 @@ function getTaskSummary(tasks: ProjectTaskRecord[] | TaskSummary) {
   return tasks;
 }
 
+function isReviewStage(status: ProjectRecord["status"] | RecentProjectSummary["status"], taskSummary: TaskSummary) {
+  return status === "clarified" && taskSummary.done === 0;
+}
+
 function getTaskStageState(taskSummary: TaskSummary, isClarified: boolean): ProjectStageState {
   if (!isClarified) {
     return "upcoming";
   }
 
-  if (taskSummary.total === 0 || taskSummary.done < taskSummary.total) {
+  if (taskSummary.done === 0) {
+    return "upcoming";
+  }
+
+  if (taskSummary.done < taskSummary.total) {
     return "current";
   }
 
@@ -56,11 +64,11 @@ export function getProjectNextAction(input: {
     };
   }
 
-  if (input.taskSummary.total === 0 || input.taskSummary.done === 0) {
+  if (isReviewStage(input.status, input.taskSummary)) {
     return {
-      label: "进入任务清单",
-      href: `/workspace/${input.id}/tasks`,
-      description: "设计书已经准备好，现在开始推进第一轮执行任务。",
+      label: "确认并进入任务执行",
+      href: `/workspace/${input.id}/review`,
+      description: "先确认这版设计书摘要已经足够清晰，再正式进入任务执行阶段。",
     };
   }
 
@@ -82,6 +90,7 @@ export function getProjectNextAction(input: {
 export function buildProjectStages(project: ProjectRecord): ProjectStageItem[] {
   const taskSummary = getTaskSummary(project.tasks);
   const isClarified = project.status === "clarified" && Boolean(project.clarification);
+  const reviewCurrent = isReviewStage(project.status, taskSummary);
 
   return [
     {
@@ -106,12 +115,23 @@ export function buildProjectStages(project: ProjectRecord): ProjectStageItem[] {
       state: isClarified ? "completed" : "upcoming",
     },
     {
+      key: "review",
+      title: "设计书确认",
+      description: isClarified
+        ? reviewCurrent
+          ? "确认设计书摘要无误后，再正式进入任务执行。"
+          : "设计书确认流程已经走通，可以继续回看。"
+        : "完成需求澄清后，会进入设计书确认阶段。",
+      href: `/workspace/${project.id}/review`,
+      state: !isClarified ? "upcoming" : reviewCurrent ? "current" : "completed",
+    },
+    {
       key: "tasks",
       title: "任务执行",
       description: isClarified
         ? taskSummary.done > 0
           ? `当前已完成 ${taskSummary.done} / ${taskSummary.total} 项任务。`
-          : "任务清单已可用，准备开始执行。"
+          : "确认设计书后即可正式开始任务执行。"
         : "完成澄清后会自动进入任务拆解和执行阶段。",
       href: `/workspace/${project.id}/tasks`,
       state: getTaskStageState(taskSummary, isClarified),
@@ -131,9 +151,9 @@ export function getProjectOverview(project: ProjectRecord) {
   let currentStageDescription = "先把这个项目的目标、用户和成功标准整理清楚。";
 
   if (project.status === "clarified") {
-    if (taskSummary.total === 0 || taskSummary.done === 0) {
-      currentStageTitle = "准备开始任务执行";
-      currentStageDescription = "你已经完成澄清，可以直接进入任务清单，开始第一轮开发推进。";
+    if (taskSummary.done === 0) {
+      currentStageTitle = "设计书确认";
+      currentStageDescription = "你已经完成澄清。先确认这版设计书摘要，再进入正式任务执行流程。";
     } else if (taskSummary.done < taskSummary.total) {
       currentStageTitle = "正在推进任务执行";
       currentStageDescription = "项目已经进入执行阶段，回到任务面板继续完成剩余任务。";

@@ -104,7 +104,7 @@ export default async function TasksPage({ params }: TasksPageProps) {
         <SectionHeader
           eyebrow="任务清单"
           title="项目任务清单"
-          description="这是已经落到数据库中的执行任务，你可以直接勾选完成状态，逐步推进项目。"
+          description="这是已经落到数据库中的执行任务。完成设计书确认后，你可以在这里逐步推进项目。"
         />
 
         <TaskBoard projectId={project.id} initialTasks={project.tasks} />
@@ -112,7 +112,7 @@ export default async function TasksPage({ params }: TasksPageProps) {
         <div className="surface-panel space-y-4 p-6">
           <h2 className="text-lg font-semibold text-slate-900">返回入口</h2>
           <p className="text-sm leading-6 text-muted-foreground">
-            你可以结合设计书预览和工作区状态，按阶段推进当前项目。
+            你可以结合工作区、设计书预览和设计书确认页，继续推进当前项目。
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -120,6 +120,12 @@ export default async function TasksPage({ params }: TasksPageProps) {
               className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
             >
               返回工作区
+            </Link>
+            <Link
+              href={`/workspace/${project.id}/review`}
+              className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            >
+              返回设计书确认
             </Link>
             <Link
               href={`/workspace/${project.id}/design`}
