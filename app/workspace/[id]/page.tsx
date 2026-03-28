@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ClarifyEntryButton } from "@/components/workspace/clarify-entry-button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getProjectById } from "@/lib/server/projects";
 
@@ -65,7 +66,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
                 状态：{project.status}
               </span>
               <span className="text-sm text-muted-foreground">
-                创建时间：{formatDate(project.createdAt.toISOString())}
+                创建时间：{formatDate(project.createdAt)}
               </span>
             </div>
 
@@ -80,15 +81,9 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
           <aside className="surface-panel space-y-4 p-6">
             <h2 className="text-lg font-semibold text-slate-900">下一步</h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              下一步，我们会把你的想法澄清成一份可执行设计书。目前这里先保留为后续 AI 澄清流程入口。
+              先把你的需求澄清清楚，再继续往设计书和执行方案推进。这里先提供一个最小入口，进入固定问题引导页。
             </p>
-            <button
-              type="button"
-              disabled
-              className="w-full rounded-full bg-slate-300 px-4 py-3 text-sm font-medium text-white"
-            >
-              AI 澄清流程即将开放
-            </button>
+            <ClarifyEntryButton projectId={project.id} status={project.status} />
           </aside>
         </div>
       </div>

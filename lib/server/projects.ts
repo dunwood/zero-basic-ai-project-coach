@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import type { CreateProjectInput, ProjectRecord } from "@/lib/types/project";
+import type {
+  CreateProjectInput,
+  ProjectRecord,
+  ProjectStatus,
+  UpdateProjectStatusInput,
+} from "@/lib/types/project";
 
 const TITLE_MAX_LENGTH = 80;
 const IDEA_MAX_LENGTH = 2000;
@@ -31,7 +36,7 @@ export function toProjectRecord(project: {
   id: string;
   title: string;
   idea: string;
-  status: string;
+  status: ProjectStatus;
   createdAt: Date;
 }): ProjectRecord {
   return {
@@ -58,11 +63,11 @@ export async function createProject(input: CreateProjectInput) {
     },
   });
 
-  return toProjectRecord(project);
+  return toProjectRecord(project as typeof project & { status: ProjectStatus });
 }
 
 export async function getProjectById(id: string) {
-  return prisma.project.findUnique({
+  const project = await prisma.project.findUnique({
     where: { id },
     select: {
       id: true,
@@ -72,4 +77,53 @@ export async function getProjectById(id: string) {
       createdAt: true,
     },
   });
+
+  if (!project) {
+    return null;
+  }
+
+  return toProjectRecord(project as typeof project & { status: ProjectStatus });
+}
+
+export function validateProjectStatusInput(input: Partial<UpdateProjectStatusInput>) {
+  if (input.status !== "clarifying") {
+    return { error: "无效状态。" };
+  }
+
+  return { status: "clarifying" as const };
+}
+
+export async function updateProjectStatus(id: string, status: ProjectStatus) {
+  const existingProject = await prisma.project.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      title: true,
+      idea: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  if (existingProject.status === status) {
+    return toProjectRecord(existingProject as typeof existingProject & { status: ProjectStatus });
+  }
+
+  const project = await prisma.project.update({
+    where: { id },
+    data: { status },
+    select: {
+      id: true,
+      title: true,
+      idea: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  return toProjectRecord(project as typeof project & { status: ProjectStatus });
 }

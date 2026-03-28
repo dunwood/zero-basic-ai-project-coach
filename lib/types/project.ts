@@ -3,10 +3,16 @@ export type CreateProjectInput = {
   idea: string;
 };
 
+export type ProjectStatus = "draft" | "clarifying";
+
 export type ProjectRecord = {
   id: string;
   title: string;
   idea: string;
-  status: string;
+  status: ProjectStatus;
   createdAt: string;
+};
+
+export type UpdateProjectStatusInput = {
+  status: ProjectStatus;
 };
