@@ -27,6 +27,33 @@ export type ProjectTaskRecord = {
   updatedAt: string;
 };
 
+export type RecommendedProjectTask = {
+  id: string;
+  title: string;
+  description: string | null;
+  phaseKey: string;
+  phaseTitle: string;
+};
+
+export type ProjectTaskPhaseGroup = {
+  phaseKey: string;
+  phaseTitle: string;
+  phaseDescription: string;
+  total: number;
+  done: number;
+  tasks: ProjectTaskRecord[];
+};
+
+export type ProjectTaskExecutionState = {
+  total: number;
+  done: number;
+  percent: number;
+  statusTitle: string;
+  statusDescription: string;
+  recommendedTask: RecommendedProjectTask | null;
+  phaseGroups: ProjectTaskPhaseGroup[];
+};
+
 export type ProjectRecord = {
   id: string;
   title: string;

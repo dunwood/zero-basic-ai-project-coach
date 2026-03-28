@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ensureProjectTasks, getProjectById } from "@/lib/server/projects";
 import { buildProjectStages, getProjectOverview } from "@/lib/project-stage";
+import { buildTaskExecutionState } from "@/lib/server/task-plan";
 
 type WorkspaceDetailPageProps = {
   params: Promise<{
@@ -69,6 +70,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
 
   const overview = getProjectOverview(project);
   const stages = buildProjectStages(project);
+  const executionState = buildTaskExecutionState(project);
 
   return (
     <section className="section-space">
@@ -110,7 +112,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
                 {project.clarification ? Object.keys(project.clarification.answers).length : 0}
               </span>
               <span>
-                任务进度：{overview.taskSummary.done} / {overview.taskSummary.total}
+                任务进度：{executionState.done} / {executionState.total}
               </span>
             </div>
           </div>
@@ -135,13 +137,72 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
           </aside>
         </div>
 
+        {project.status === "clarified" ? (
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)]">
+            <div className="surface-panel space-y-4 p-6">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">任务摘要</p>
+                <h2 className="text-xl font-semibold text-slate-900">{executionState.statusTitle}</h2>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {executionState.statusDescription}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-border bg-white px-4 py-4">
+                  <p className="text-xs text-muted-foreground">总任务数</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">{executionState.total}</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-white px-4 py-4">
+                  <p className="text-xs text-muted-foreground">已完成</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">{executionState.done}</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-white px-4 py-4">
+                  <p className="text-xs text-muted-foreground">完成度</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">{executionState.percent}%</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="surface-panel space-y-4 p-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">推荐任务</p>
+              {executionState.recommendedTask ? (
+                <>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    {executionState.recommendedTask.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    所在阶段：{executionState.recommendedTask.phaseTitle}
+                  </p>
+                  <p className="text-sm leading-6 text-slate-700">
+                    {executionState.recommendedTask.description ?? "建议先从这条未完成任务开始推进。"}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-semibold text-slate-900">当前没有待办推荐任务</h2>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    所有任务都已经完成，可以回顾成果并准备下一轮迭代。
+                  </p>
+                </>
+              )}
+              <Link
+                href={`/workspace/${project.id}/tasks`}
+                className="inline-flex w-full justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                进入任务执行台
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-xl font-semibold text-slate-900">阶段导航</h2>
             <p className="text-sm text-muted-foreground">按当前进度查看澄清、设计书和任务执行入口。</p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {stages.map((stage) => (
               <article key={stage.key} className="surface-panel flex h-full flex-col gap-4 p-5">
                 <div className="flex flex-wrap items-center gap-3">

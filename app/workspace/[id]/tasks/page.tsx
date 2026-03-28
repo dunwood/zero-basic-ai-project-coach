@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TaskBoard } from "@/components/workspace/task-board";
 import { SectionHeader } from "@/components/ui/section-header";
+import { buildTaskExecutionState } from "@/lib/server/task-plan";
 import { ensureProjectTasks } from "@/lib/server/projects";
 
 type TasksPageProps = {
@@ -19,9 +20,9 @@ export default async function TasksPage({ params }: TasksPageProps) {
         <div className="container-shell">
           <div className="surface-panel max-w-3xl space-y-5 p-8">
             <SectionHeader
-              eyebrow="任务清单"
+              eyebrow="任务执行台"
               title="没有找到这个项目"
-              description="这个任务清单对应的项目不存在，可能是链接失效，或项目还没有创建成功。"
+              description="这个任务执行页对应的项目不存在，可能是链接失效，或项目还没有创建成功。"
             />
             <Link
               href="/project/new"
@@ -41,12 +42,12 @@ export default async function TasksPage({ params }: TasksPageProps) {
         <div className="container-shell">
           <div className="surface-panel max-w-3xl space-y-5 p-8">
             <SectionHeader
-              eyebrow="任务清单"
+              eyebrow="任务执行台"
               title="你还没有完成需求澄清"
               description="完成需求澄清后，系统才能基于当前设计书预览整理出第一版任务清单。"
             />
             <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-5 text-sm leading-6 text-muted-foreground">
-              先去完成澄清问题填写，再回来查看任务清单。
+              先去完成澄清问题填写，再回来进入任务执行台。
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -68,14 +69,16 @@ export default async function TasksPage({ params }: TasksPageProps) {
     );
   }
 
+  const executionState = buildTaskExecutionState(project);
+
   if (project.tasks.length === 0) {
     return (
       <section className="section-space">
         <div className="container-shell">
           <div className="surface-panel max-w-3xl space-y-5 p-8">
             <SectionHeader
-              eyebrow="任务清单"
-              title="任务初始化暂时失败"
+              eyebrow="任务执行台"
+              title="任务清单暂时还是空的"
               description="设计书数据已经准备好，但任务清单还没有成功写入数据库，请稍后刷新再试。"
             />
             <div className="flex flex-wrap gap-3">
@@ -86,10 +89,10 @@ export default async function TasksPage({ params }: TasksPageProps) {
                 返回工作区
               </Link>
               <Link
-                href={`/workspace/${project.id}/design`}
+                href={`/workspace/${project.id}/review`}
                 className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
               >
-                返回设计书预览
+                返回设计书确认
               </Link>
             </div>
           </div>
@@ -102,12 +105,16 @@ export default async function TasksPage({ params }: TasksPageProps) {
     <section className="section-space">
       <div className="container-shell space-y-8">
         <SectionHeader
-          eyebrow="任务清单"
-          title="项目任务清单"
-          description="这是已经落到数据库中的执行任务。完成设计书确认后，你可以在这里逐步推进项目。"
+          eyebrow="任务执行台"
+          title="项目任务执行台"
+          description="这里会按阶段展示当前任务、整体进度和推荐先做项，帮助你更顺地推进项目。"
         />
 
-        <TaskBoard projectId={project.id} initialTasks={project.tasks} />
+        <TaskBoard
+          projectId={project.id}
+          initialTasks={project.tasks}
+          initialExecutionState={executionState}
+        />
 
         <div className="surface-panel space-y-4 p-6">
           <h2 className="text-lg font-semibold text-slate-900">返回入口</h2>

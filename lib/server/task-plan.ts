@@ -1,5 +1,11 @@
-import type { ProjectRecord } from "@/lib/types/project";
 import { buildDesignBrief } from "@/lib/server/design-brief";
+import type {
+  ProjectRecord,
+  ProjectTaskExecutionState,
+  ProjectTaskPhaseGroup,
+  ProjectTaskRecord,
+  RecommendedProjectTask,
+} from "@/lib/types/project";
 
 export type TaskPlanItem = {
   title: string;
@@ -149,4 +155,94 @@ export function flattenTaskPlan(project: ProjectRecord): TaskPlanSeedItem[] {
       sortOrder: phaseIndex * 100 + itemIndex + 1,
     })),
   );
+}
+
+function getRecommendedTask(tasks: ProjectTaskRecord[]): RecommendedProjectTask | null {
+  const task = tasks.find((item) => !item.isDone);
+
+  if (!task) {
+    return null;
+  }
+
+  return {
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    phaseKey: task.phaseKey,
+    phaseTitle: task.phaseTitle,
+  };
+}
+
+function getTaskStatusCopy(total: number, done: number) {
+  if (total === 0) {
+    return {
+      statusTitle: "还没有可执行任务",
+      statusDescription: "当前任务清单还是空的，请稍后刷新或回到工作区重新检查项目状态。",
+    };
+  }
+
+  if (done === 0) {
+    return {
+      statusTitle: "准备开始第一项任务",
+      statusDescription: "设计书确认已经完成，接下来建议先从推荐任务开始推进。",
+    };
+  }
+
+  if (done < total) {
+    return {
+      statusTitle: "任务执行进行中",
+      statusDescription: "你已经完成了一部分任务，继续沿着当前推荐任务往前推进就好。",
+    };
+  }
+
+  return {
+    statusTitle: "你已经完成全部任务",
+    statusDescription: "当前任务清单已经全部勾选完成，可以回顾设计书和整体流程，准备下一轮扩展。",
+  };
+}
+
+export function buildTaskExecutionState(project: ProjectRecord): ProjectTaskExecutionState {
+  const plan = buildTaskPlan(project);
+  const phaseDescriptionMap = new Map(
+    (plan?.phases ?? []).map((phase, index) => [`phase-${index + 1}`, phase.description]),
+  );
+
+  const groupMap = new Map<string, ProjectTaskPhaseGroup>();
+
+  for (const task of project.tasks) {
+    const existing = groupMap.get(task.phaseKey);
+
+    if (existing) {
+      existing.tasks.push(task);
+      existing.total += 1;
+      existing.done += task.isDone ? 1 : 0;
+      continue;
+    }
+
+    groupMap.set(task.phaseKey, {
+      phaseKey: task.phaseKey,
+      phaseTitle: task.phaseTitle,
+      phaseDescription: phaseDescriptionMap.get(task.phaseKey) ?? "按这个阶段的任务逐步推进即可。",
+      total: 1,
+      done: task.isDone ? 1 : 0,
+      tasks: [task],
+    });
+  }
+
+  const phaseGroups = Array.from(groupMap.values());
+  const total = project.tasks.length;
+  const done = project.tasks.filter((task) => task.isDone).length;
+  const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+  const recommendedTask = getRecommendedTask(project.tasks);
+  const statusCopy = getTaskStatusCopy(total, done);
+
+  return {
+    total,
+    done,
+    percent,
+    statusTitle: statusCopy.statusTitle,
+    statusDescription: statusCopy.statusDescription,
+    recommendedTask,
+    phaseGroups,
+  };
 }
