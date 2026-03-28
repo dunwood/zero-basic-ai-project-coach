@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { buildDesignBrief } from "@/lib/server/design-brief";
 import { getProjectById } from "@/lib/server/projects";
+import { buildProjectStages } from "@/lib/project-stage";
 
 type DesignPageProps = {
   params: Promise<{
@@ -84,6 +86,7 @@ export default async function DesignPage({ params }: DesignPageProps) {
   }
 
   const brief = buildDesignBrief(project);
+  const stages = buildProjectStages(project);
 
   if (!brief) {
     return (
@@ -115,6 +118,8 @@ export default async function DesignPage({ params }: DesignPageProps) {
           title="项目设计书预览"
           description="这是基于你当前项目想法和澄清回答整理出的静态设计书预览。确认无误后，就可以进入正式任务执行。"
         />
+
+        <WorkspaceStepNav projectId={project.id} stages={stages} currentKey="design" />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
           <article className="space-y-5">

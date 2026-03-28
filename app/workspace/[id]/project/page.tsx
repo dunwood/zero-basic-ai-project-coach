@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { ProjectDetailsForm } from "@/components/workspace/project-details-form";
+import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getProjectById } from "@/lib/server/projects";
+import { buildProjectStages } from "@/lib/project-stage";
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -48,6 +50,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const clarificationCount = project.clarification
     ? Object.keys(project.clarification.answers).length
     : 0;
+  const stages = buildProjectStages(project);
 
   return (
     <section className="section-space">
@@ -57,6 +60,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           title="查看并轻量编辑项目信息"
           description="这里可以回看项目当前核心信息，并修改项目标题和项目想法，不会影响现有澄清、设计书和任务主流程。"
         />
+
+        <WorkspaceStepNav projectId={project.id} stages={stages} currentKey="created" />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
           <div className="surface-panel space-y-6 p-6 md:p-8">

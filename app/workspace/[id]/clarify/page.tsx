@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ClarifyForm } from "@/components/workspace/clarify-form";
+import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { clarifyQuestions } from "@/lib/constants/clarify-questions";
 import { getProjectById } from "@/lib/server/projects";
+import { buildProjectStages } from "@/lib/project-stage";
 
 type ClarifyPageProps = {
   params: Promise<{
@@ -40,6 +42,7 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
     accumulator[question.key] = project.clarification?.answers?.[question.key] ?? "";
     return accumulator;
   }, {});
+  const stages = buildProjectStages(project);
 
   return (
     <section className="section-space">
@@ -49,6 +52,8 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
           title="先把需求澄清，再开始做"
           description="下一步我们会像项目教练一样，一步步帮你把模糊想法变成可执行方案。现在先从这些关键问题开始。"
         />
+
+        <WorkspaceStepNav projectId={project.id} stages={stages} currentKey="clarify" />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)]">
           <article className="surface-panel space-y-5 p-6 md:p-8">

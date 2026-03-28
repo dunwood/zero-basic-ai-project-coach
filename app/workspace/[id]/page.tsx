@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ensureProjectTasks, getProjectById } from "@/lib/server/projects";
-import { buildProjectStages, getProjectOverview } from "@/lib/project-stage";
+import { getProjectOverview } from "@/lib/project-stage";
 import { buildTaskExecutionState } from "@/lib/server/task-plan";
 
 type WorkspaceDetailPageProps = {
@@ -19,18 +20,6 @@ function formatDate(dateString: string) {
     minute: "2-digit",
   }).format(new Date(dateString));
 }
-
-const stageStateLabelMap = {
-  completed: "已完成",
-  current: "当前阶段",
-  upcoming: "未开始",
-} as const;
-
-const stageStateClassNameMap = {
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  current: "border-blue-200 bg-blue-50 text-blue-800",
-  upcoming: "border-border bg-white text-slate-600",
-} as const;
 
 export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPageProps) {
   const { id } = await params;
@@ -69,7 +58,6 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       : baseProject;
 
   const overview = getProjectOverview(project);
-  const stages = buildProjectStages(project);
   const executionState = buildTaskExecutionState(project);
 
   return (
@@ -153,6 +141,13 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
           </aside>
         </div>
 
+        <WorkspaceStepNav
+          projectId={project.id}
+          stages={overview.stages}
+          currentKey={overview.currentStageKey}
+          showPager={false}
+        />
+
         {project.status === "clarified" ? (
           <section className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)]">
             <div className="surface-panel space-y-4 p-6">
@@ -211,39 +206,6 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
             </div>
           </section>
         ) : null}
-
-        <section className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold text-slate-900">阶段导航</h2>
-            <p className="text-sm text-muted-foreground">按当前进度查看澄清、设计书和任务执行入口。</p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {stages.map((stage) => (
-              <article key={stage.key} className="surface-panel flex h-full flex-col gap-4 p-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span
-                    className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${stageStateClassNameMap[stage.state]}`}
-                  >
-                    {stageStateLabelMap[stage.state]}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-slate-900">{stage.title}</h3>
-                  <p className="text-sm leading-6 text-muted-foreground">{stage.description}</p>
-                </div>
-
-                <Link
-                  href={stage.href}
-                  className="mt-auto inline-flex w-fit rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-                >
-                  打开这个阶段
-                </Link>
-              </article>
-            ))}
-          </div>
-        </section>
       </div>
     </section>
   );

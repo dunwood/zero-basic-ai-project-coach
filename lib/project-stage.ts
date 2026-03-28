@@ -2,6 +2,7 @@ import type {
   ProjectNextAction,
   ProjectRecord,
   ProjectStageItem,
+  ProjectStageKey,
   ProjectStageState,
   ProjectTaskRecord,
   RecentProjectSummary,
@@ -87,6 +88,21 @@ export function getProjectNextAction(input: {
   };
 }
 
+export function getCurrentProjectStageKey(input: {
+  status: ProjectRecord["status"] | RecentProjectSummary["status"];
+  taskSummary: TaskSummary;
+}): ProjectStageKey {
+  if (input.status === "draft" || input.status === "clarifying") {
+    return "clarify";
+  }
+
+  if (isReviewStage(input.status, input.taskSummary)) {
+    return "review";
+  }
+
+  return "tasks";
+}
+
 export function buildProjectStages(project: ProjectRecord): ProjectStageItem[] {
   const taskSummary = getTaskSummary(project.tasks);
   const isClarified = project.status === "clarified" && Boolean(project.clarification);
@@ -96,8 +112,8 @@ export function buildProjectStages(project: ProjectRecord): ProjectStageItem[] {
     {
       key: "created",
       title: "项目创建",
-      description: "项目名称和想法已经保存。",
-      href: `/workspace/${project.id}`,
+      description: "项目名称和想法已经保存，可进入项目详情继续编辑。",
+      href: `/workspace/${project.id}/project`,
       state: "completed",
     },
     {
@@ -169,6 +185,10 @@ export function getProjectOverview(project: ProjectRecord) {
   return {
     taskSummary,
     nextAction,
+    currentStageKey: getCurrentProjectStageKey({
+      status: project.status,
+      taskSummary,
+    }),
     currentStageTitle,
     currentStageDescription,
     stages: buildProjectStages(project),

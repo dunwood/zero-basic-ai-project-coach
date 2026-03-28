@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { TaskBoard } from "@/components/workspace/task-board";
+import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
+import { buildProjectStages } from "@/lib/project-stage";
 import { buildTaskExecutionState } from "@/lib/server/task-plan";
 import { ensureProjectTasks } from "@/lib/server/projects";
 
@@ -70,6 +72,7 @@ export default async function TasksPage({ params }: TasksPageProps) {
   }
 
   const executionState = buildTaskExecutionState(project);
+  const stages = buildProjectStages(project);
 
   if (project.tasks.length === 0) {
     return (
@@ -109,6 +112,8 @@ export default async function TasksPage({ params }: TasksPageProps) {
           title="项目任务执行台"
           description="这里会按阶段展示当前任务、整体进度和推荐先做项，帮助你更顺地推进项目。"
         />
+
+        <WorkspaceStepNav projectId={project.id} stages={stages} currentKey="tasks" />
 
         <TaskBoard
           projectId={project.id}

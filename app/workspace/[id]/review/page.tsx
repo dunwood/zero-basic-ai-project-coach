@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { buildDesignBrief } from "@/lib/server/design-brief";
 import { getProjectById } from "@/lib/server/projects";
+import { buildProjectStages } from "@/lib/project-stage";
 
 type ReviewPageProps = {
   params: Promise<{
@@ -84,6 +86,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   }
 
   const brief = buildDesignBrief(project);
+  const stages = buildProjectStages(project);
 
   if (!brief) {
     return (
@@ -123,6 +126,8 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
           title="确认你的项目设计书"
           description="在进入任务执行前，先确认这个版本是否已经足够清晰。当前内容基于你的项目想法和需求澄清整理而成。"
         />
+
+        <WorkspaceStepNav projectId={project.id} stages={stages} currentKey="review" />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
           <article className="space-y-5">

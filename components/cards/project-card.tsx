@@ -39,6 +39,7 @@ export function ProjectCard(project: ProjectCardProps) {
           <p className="text-sm leading-6 text-muted-foreground">
             任务进度：{project.taskSummary.done} / {project.taskSummary.total}
           </p>
+          <p className="text-sm font-medium text-slate-900">继续项目：{nextAction.label}</p>
           <p className="text-sm leading-6 text-slate-700">{nextAction.description}</p>
         </div>
       </div>
@@ -47,7 +48,7 @@ export function ProjectCard(project: ProjectCardProps) {
         href={nextAction.href}
         className="inline-flex w-fit rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
       >
-        {nextAction.label}
+        继续项目
       </Link>
     </article>
   );
