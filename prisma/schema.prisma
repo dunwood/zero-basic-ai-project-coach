@@ -27,6 +27,15 @@ model Route {
   @@index([sortOrder])
 }
 
+model Project {
+  id        String   @id @default(cuid())
+  title     String
+  idea      String
+  status    String   @default("draft")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model RouteStep {
   id                  String   @id @default(cuid())
   routeId             String
