@@ -18,6 +18,14 @@ export type TaskPlan = {
   phases: TaskPlanPhase[];
 };
 
+export type TaskPlanSeedItem = {
+  phaseKey: string;
+  phaseTitle: string;
+  title: string;
+  description: string;
+  sortOrder: number;
+};
+
 function shortText(value: string, fallback: string) {
   const trimmed = value.trim();
   return trimmed || fallback;
@@ -123,4 +131,22 @@ export function buildTaskPlan(project: ProjectRecord): TaskPlan | null {
       },
     ],
   };
+}
+
+export function flattenTaskPlan(project: ProjectRecord): TaskPlanSeedItem[] {
+  const plan = buildTaskPlan(project);
+
+  if (!plan) {
+    return [];
+  }
+
+  return plan.phases.flatMap((phase, phaseIndex) =>
+    phase.items.map((item, itemIndex) => ({
+      phaseKey: `phase-${phaseIndex + 1}`,
+      phaseTitle: phase.title,
+      title: item.title,
+      description: item.description,
+      sortOrder: phaseIndex * 100 + itemIndex + 1,
+    })),
+  );
 }

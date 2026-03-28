@@ -14,6 +14,19 @@ export type ProjectClarificationRecord = {
   updatedAt: string;
 };
 
+export type ProjectTaskRecord = {
+  id: string;
+  projectId: string;
+  phaseKey: string;
+  phaseTitle: string;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  isDone: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ProjectRecord = {
   id: string;
   title: string;
@@ -21,6 +34,7 @@ export type ProjectRecord = {
   status: ProjectStatus;
   createdAt: string;
   clarification: ProjectClarificationRecord | null;
+  tasks: ProjectTaskRecord[];
 };
 
 export type UpdateProjectStatusInput = {
@@ -29,4 +43,8 @@ export type UpdateProjectStatusInput = {
 
 export type SaveProjectClarificationInput = {
   answers: ClarificationAnswers;
+};
+
+export type UpdateProjectTaskInput = {
+  isDone: boolean;
 };

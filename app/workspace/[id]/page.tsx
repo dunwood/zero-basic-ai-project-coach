@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ClarifyEntryButton } from "@/components/workspace/clarify-entry-button";
 import { SectionHeader } from "@/components/ui/section-header";
-import { getProjectById } from "@/lib/server/projects";
+import { ensureProjectTasks, getProjectById } from "@/lib/server/projects";
 
 type WorkspaceDetailPageProps = {
   params: Promise<{
@@ -21,9 +21,9 @@ function formatDate(dateString: string) {
 
 export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPageProps) {
   const { id } = await params;
-  const project = await getProjectById(id);
+  const baseProject = await getProjectById(id);
 
-  if (!project) {
+  if (!baseProject) {
     return (
       <section className="section-space">
         <div className="container-shell">
@@ -31,11 +31,11 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
             <SectionHeader
               eyebrow="项目工作区"
               title="没有找到这个项目"
-              description="可能是链接已失效，或这个项目还没有成功创建。"
+              description="可能是链接已经失效，或这个项目还没有创建成功。"
             />
             <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-5">
               <p className="text-sm leading-6 text-muted-foreground">
-                你可以返回项目创建页，重新提交你的项目想法。
+                你可以回到项目创建页，重新提交你的项目想法。
               </p>
             </div>
             <Link
@@ -50,6 +50,14 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
     );
   }
 
+  const project =
+    baseProject.status === "clarified" && baseProject.clarification
+      ? ((await ensureProjectTasks(id)) ?? baseProject)
+      : baseProject;
+
+  const completedTaskCount = project.tasks.filter((task) => task.isDone).length;
+  const totalTaskCount = project.tasks.length;
+
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
@@ -58,7 +66,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
           title={project.title}
           description={
             project.status === "clarified"
-              ? "你已经完成了需求澄清。下一步，我们会基于这些回答继续生成设计书。"
+              ? "你已经完成了需求澄清。下一步，我们会基于这些回答继续推进设计书和任务执行。"
               : "这里是当前项目的基础工作区。下一步会在这里继续把你的想法澄清成可执行方案。"
           }
         />
@@ -82,14 +90,20 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
             </div>
 
             {project.status === "clarified" ? (
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5">
-                <p className="text-sm font-semibold text-emerald-800">已完成需求澄清</p>
-                <p className="mt-2 text-sm leading-6 text-emerald-700">
-                  当前项目已保存澄清回答，可继续进入后续设计书生成流程。
-                </p>
-                <p className="mt-3 text-xs text-emerald-700/80">
-                  已回答问题数：{project.clarification ? Object.keys(project.clarification.answers).length : 0}
-                </p>
+              <div className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800">已完成需求澄清</p>
+                  <p className="mt-2 text-sm leading-6 text-emerald-700">
+                    当前项目已保存澄清回答，可以继续查看设计书预览和任务清单。
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 text-xs text-emerald-700/80">
+                  <span>
+                    已回答问题数：
+                    {project.clarification ? Object.keys(project.clarification.answers).length : 0}
+                  </span>
+                  <span>任务进度：{completedTaskCount} / {totalTaskCount || 0}</span>
+                </div>
               </div>
             ) : null}
           </article>
@@ -99,10 +113,10 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
             {project.status === "clarified" ? (
               <>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  澄清回答已经保存完成。下一步，我们会根据这些回答生成一份结构化设计书。
+                  澄清回答已经保存完成。现在你可以继续查看设计书预览，并在任务面板里推进执行进度。
                 </p>
                 <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
-                  你现在已经可以先查看一份静态整理版设计书预览，帮助你确认方向是否足够清晰。
+                  当前任务进度：{completedTaskCount} / {totalTaskCount || 0}
                 </div>
                 <div className="flex flex-col gap-3">
                   <Link

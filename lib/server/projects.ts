@@ -1,17 +1,79 @@
 import { prisma } from "@/lib/prisma";
 import { clarifyQuestionKeys } from "@/lib/constants/clarify-questions";
+import { flattenTaskPlan } from "@/lib/server/task-plan";
 import type {
   ClarificationAnswers,
   CreateProjectInput,
   ProjectClarificationRecord,
   ProjectRecord,
   ProjectStatus,
+  ProjectTaskRecord,
   SaveProjectClarificationInput,
   UpdateProjectStatusInput,
+  UpdateProjectTaskInput,
 } from "@/lib/types/project";
 
 const TITLE_MAX_LENGTH = 80;
 const IDEA_MAX_LENGTH = 2000;
+
+const projectSelect = {
+  id: true,
+  title: true,
+  idea: true,
+  status: true,
+  createdAt: true,
+  clarification: {
+    select: {
+      projectId: true,
+      answers: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+  tasks: {
+    select: {
+      id: true,
+      projectId: true,
+      phaseKey: true,
+      phaseTitle: true,
+      title: true,
+      description: true,
+      sortOrder: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: {
+      sortOrder: "asc" as const,
+    },
+  },
+} satisfies Parameters<typeof prisma.project.findUnique>[0]["select"];
+
+type ProjectPayload = {
+  id: string;
+  title: string;
+  idea: string;
+  status: ProjectStatus;
+  createdAt: Date;
+  clarification?: {
+    projectId: string;
+    answers: unknown;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
+  tasks: Array<{
+    id: string;
+    projectId: string;
+    phaseKey: string;
+    phaseTitle: string;
+    title: string;
+    description: string | null;
+    sortOrder: number;
+    isDone: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
+};
 
 export function validateProjectInput(input: CreateProjectInput) {
   const title = input.title.trim();
@@ -36,19 +98,7 @@ export function validateProjectInput(input: CreateProjectInput) {
   return { title, idea };
 }
 
-export function toProjectRecord(project: {
-  id: string;
-  title: string;
-  idea: string;
-  status: ProjectStatus;
-  createdAt: Date;
-  clarification?: {
-    projectId: string;
-    answers: unknown;
-    createdAt: Date;
-    updatedAt: Date;
-  } | null;
-}): ProjectRecord {
+export function toProjectRecord(project: ProjectPayload): ProjectRecord {
   return {
     id: project.id,
     title: project.title,
@@ -56,6 +106,7 @@ export function toProjectRecord(project: {
     status: project.status,
     createdAt: project.createdAt.toISOString(),
     clarification: project.clarification ? toProjectClarificationRecord(project.clarification) : null,
+    tasks: project.tasks.map(toProjectTaskRecord),
   };
 }
 
@@ -73,57 +124,55 @@ export function toProjectClarificationRecord(clarification: {
   };
 }
 
+export function toProjectTaskRecord(task: {
+  id: string;
+  projectId: string;
+  phaseKey: string;
+  phaseTitle: string;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  isDone: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}): ProjectTaskRecord {
+  return {
+    id: task.id,
+    projectId: task.projectId,
+    phaseKey: task.phaseKey,
+    phaseTitle: task.phaseTitle,
+    title: task.title,
+    description: task.description,
+    sortOrder: task.sortOrder,
+    isDone: task.isDone,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  };
+}
+
 export async function createProject(input: CreateProjectInput) {
   const project = await prisma.project.create({
     data: {
       title: input.title,
       idea: input.idea,
     },
-    select: {
-      id: true,
-      title: true,
-      idea: true,
-      status: true,
-      createdAt: true,
-      clarification: {
-        select: {
-          projectId: true,
-          answers: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
+    select: projectSelect,
   });
 
-  return toProjectRecord(project as typeof project & { status: ProjectStatus });
+  return toProjectRecord(project as ProjectPayload);
 }
 
 export async function getProjectById(id: string) {
   const project = await prisma.project.findUnique({
     where: { id },
-    select: {
-      id: true,
-      title: true,
-      idea: true,
-      status: true,
-      createdAt: true,
-      clarification: {
-        select: {
-          projectId: true,
-          answers: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
+    select: projectSelect,
   });
 
   if (!project) {
     return null;
   }
 
-  return toProjectRecord(project as typeof project & { status: ProjectStatus });
+  return toProjectRecord(project as ProjectPayload);
 }
 
 export function validateProjectStatusInput(input: Partial<UpdateProjectStatusInput>) {
@@ -137,21 +186,7 @@ export function validateProjectStatusInput(input: Partial<UpdateProjectStatusInp
 export async function updateProjectStatus(id: string, status: ProjectStatus) {
   const existingProject = await prisma.project.findUnique({
     where: { id },
-    select: {
-      id: true,
-      title: true,
-      idea: true,
-      status: true,
-      createdAt: true,
-      clarification: {
-        select: {
-          projectId: true,
-          answers: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
+    select: projectSelect,
   });
 
   if (!existingProject) {
@@ -159,30 +194,16 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
   }
 
   if (existingProject.status === status) {
-    return toProjectRecord(existingProject as typeof existingProject & { status: ProjectStatus });
+    return toProjectRecord(existingProject as ProjectPayload);
   }
 
   const project = await prisma.project.update({
     where: { id },
     data: { status },
-    select: {
-      id: true,
-      title: true,
-      idea: true,
-      status: true,
-      createdAt: true,
-      clarification: {
-        select: {
-          projectId: true,
-          answers: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
+    select: projectSelect,
   });
 
-  return toProjectRecord(project as typeof project & { status: ProjectStatus });
+  return toProjectRecord(project as ProjectPayload);
 }
 
 export function validateClarificationAnswersInput(input: Partial<SaveProjectClarificationInput>) {
@@ -233,25 +254,122 @@ export async function saveProjectClarification(id: string, answers: Clarificatio
   const project = await prisma.project.update({
     where: { id },
     data: { status: "clarified" },
-    select: {
-      id: true,
-      title: true,
-      idea: true,
-      status: true,
-      createdAt: true,
-      clarification: {
-        select: {
-          projectId: true,
-          answers: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
+    select: projectSelect,
   });
 
   return {
-    project: toProjectRecord(project as typeof project & { status: ProjectStatus }),
+    project: toProjectRecord(project as ProjectPayload),
     clarification: toProjectClarificationRecord(clarification),
   };
+}
+
+export async function ensureProjectTasks(id: string) {
+  const project = await prisma.project.findUnique({
+    where: { id },
+    select: projectSelect,
+  });
+
+  if (!project) {
+    return null;
+  }
+
+  const projectRecord = toProjectRecord(project as ProjectPayload);
+
+  if (projectRecord.status !== "clarified" || !projectRecord.clarification) {
+    return projectRecord;
+  }
+
+  if (projectRecord.tasks.length > 0) {
+    return projectRecord;
+  }
+
+  const taskSeeds = flattenTaskPlan(projectRecord);
+
+  if (taskSeeds.length === 0) {
+    return projectRecord;
+  }
+
+  await prisma.projectTask.createMany({
+    data: taskSeeds.map((task) => ({
+      projectId: id,
+      phaseKey: task.phaseKey,
+      phaseTitle: task.phaseTitle,
+      title: task.title,
+      description: task.description,
+      sortOrder: task.sortOrder,
+    })),
+  });
+
+  const refreshedProject = await prisma.project.findUnique({
+    where: { id },
+    select: projectSelect,
+  });
+
+  if (!refreshedProject) {
+    return null;
+  }
+
+  return toProjectRecord(refreshedProject as ProjectPayload);
+}
+
+export async function getProjectTasks(id: string) {
+  const project = await ensureProjectTasks(id);
+
+  if (!project) {
+    return null;
+  }
+
+  return project.tasks;
+}
+
+export function validateProjectTaskInput(input: Partial<UpdateProjectTaskInput>) {
+  if (typeof input.isDone !== "boolean") {
+    return { error: "任务状态无效。" };
+  }
+
+  return { isDone: input.isDone };
+}
+
+export async function updateProjectTask(projectId: string, taskId: string, isDone: boolean) {
+  const existingTask = await prisma.projectTask.findFirst({
+    where: {
+      id: taskId,
+      projectId,
+    },
+    select: {
+      id: true,
+      projectId: true,
+      phaseKey: true,
+      phaseTitle: true,
+      title: true,
+      description: true,
+      sortOrder: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!existingTask) {
+    return null;
+  }
+
+  const task = await prisma.projectTask.update({
+    where: { id: taskId },
+    data: { isDone },
+    select: {
+      id: true,
+      projectId: true,
+      phaseKey: true,
+      phaseTitle: true,
+      title: true,
+      description: true,
+      sortOrder: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return toProjectTaskRecord(task);
 }
