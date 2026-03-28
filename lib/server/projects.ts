@@ -10,6 +10,7 @@ import type {
   ProjectTaskRecord,
   RecentProjectSummary,
   SaveProjectClarificationInput,
+  UpdateProjectDetailsInput,
   UpdateProjectStatusInput,
   UpdateProjectTaskInput,
 } from "@/lib/types/project";
@@ -99,6 +100,13 @@ export function validateProjectInput(input: CreateProjectInput) {
   }
 
   return { title, idea };
+}
+
+export function validateProjectDetailsInput(input: Partial<UpdateProjectDetailsInput>) {
+  return validateProjectInput({
+    title: input.title ?? "",
+    idea: input.idea ?? "",
+  });
 }
 
 export function toProjectRecord(project: ProjectPayload): ProjectRecord {
@@ -238,6 +246,35 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
   const project = await prisma.project.update({
     where: { id },
     data: { status },
+    select: projectSelect,
+  });
+
+  return toProjectRecord(project as ProjectPayload);
+}
+
+export async function updateProjectDetails(id: string, input: UpdateProjectDetailsInput) {
+  const existingProject = await prisma.project.findUnique({
+    where: { id },
+    select: projectSelect,
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const normalizedTitle = input.title.trim();
+  const normalizedIdea = input.idea.trim();
+
+  if (existingProject.title === normalizedTitle && existingProject.idea === normalizedIdea) {
+    return toProjectRecord(existingProject as ProjectPayload);
+  }
+
+  const project = await prisma.project.update({
+    where: { id },
+    data: {
+      title: normalizedTitle,
+      idea: normalizedIdea,
+    },
     select: projectSelect,
   });
 

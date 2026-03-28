@@ -115,6 +115,15 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
                 任务进度：{executionState.done} / {executionState.total}
               </span>
             </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/workspace/${project.id}/project`}
+                className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                查看项目详情
+              </Link>
+            </div>
           </div>
 
           <aside className="space-y-4 rounded-3xl border border-border bg-[#fcfbf7] p-5">
@@ -134,6 +143,13 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
             <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
               如果你只是想回看当前阶段，也可以直接使用下方阶段导航入口。
             </div>
+
+            <Link
+              href={`/workspace/${project.id}/project`}
+              className="inline-flex w-full justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            >
+              查看项目详情
+            </Link>
           </aside>
         </div>
 

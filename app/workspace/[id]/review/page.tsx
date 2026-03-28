@@ -172,6 +172,12 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
             <div className="flex flex-col gap-3">
               <Link
+                href={`/workspace/${project.id}/project`}
+                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                查看项目详情
+              </Link>
+              <Link
                 href={`/workspace/${project.id}/design`}
                 className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
               >

@@ -99,6 +99,11 @@ export type UpdateProjectStatusInput = {
   status: ProjectStatus;
 };
 
+export type UpdateProjectDetailsInput = {
+  title: string;
+  idea: string;
+};
+
 export type SaveProjectClarificationInput = {
   answers: ClarificationAnswers;
 };
