@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { TaskBoard } from "@/components/workspace/task-board";
+import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
+import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { buildProjectStages } from "@/lib/project-stage";
@@ -18,56 +19,30 @@ export default async function TasksPage({ params }: TasksPageProps) {
 
   if (!project) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="任务执行台"
-              title="没有找到这个项目"
-              description="这个任务执行页对应的项目不存在，可能是链接失效，或项目还没有创建成功。"
-            />
-            <Link
-              href="/project/new"
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              回到项目创建页
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="任务执行台"
+        title="没有找到这个项目"
+        description="这个任务执行页对应的项目不存在，可能是链接失效，或者项目还没有创建成功。"
+        actions={[
+          { href: "/project/new", label: "创建新项目" },
+          { href: "/", label: "返回首页", variant: "secondary" },
+        ]}
+      />
     );
   }
 
   if (project.status !== "clarified" || !project.clarification) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="任务执行台"
-              title="你还没有完成需求澄清"
-              description="完成需求澄清后，系统才能基于当前设计书预览整理出第一版任务清单。"
-            />
-            <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-5 text-sm leading-6 text-muted-foreground">
-              先去完成澄清问题填写，再回来进入任务执行台。
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={`/workspace/${project.id}`}
-                className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                返回工作区
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/clarify`}
-                className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                去完成需求澄清
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="任务执行台"
+        title="你还没有完成需求澄清"
+        description="完成需求澄清后，系统才能基于当前设计书预览整理出第一版任务清单。"
+        note="先去完成澄清问题填写，再回来进入任务执行台。"
+        actions={[
+          { href: `/workspace/${project.id}/clarify`, label: "去完成需求澄清" },
+          { href: `/workspace/${project.id}`, label: "返回工作区", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -76,31 +51,15 @@ export default async function TasksPage({ params }: TasksPageProps) {
 
   if (project.tasks.length === 0) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="任务执行台"
-              title="任务清单暂时还是空的"
-              description="设计书数据已经准备好，但任务清单还没有成功写入数据库，请稍后刷新再试。"
-            />
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={`/workspace/${project.id}`}
-                className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                返回工作区
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/review`}
-                className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                返回设计书确认
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="任务执行台"
+        title="任务清单暂时还是空的"
+        description="设计书数据已经准备好，但任务清单还没有成功写入数据库，请稍后刷新再试。"
+        actions={[
+          { href: `/workspace/${project.id}/review`, label: "返回设计书确认" },
+          { href: `/workspace/${project.id}`, label: "返回工作区", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -121,32 +80,15 @@ export default async function TasksPage({ params }: TasksPageProps) {
           initialExecutionState={executionState}
         />
 
-        <div className="surface-panel space-y-4 p-6">
-          <h2 className="text-lg font-semibold text-slate-900">返回入口</h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            你可以结合工作区、设计书预览和设计书确认页，继续推进当前项目。
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/workspace/${project.id}`}
-              className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-            >
-              返回工作区
-            </Link>
-            <Link
-              href={`/workspace/${project.id}/review`}
-              className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-            >
-              返回设计书确认
-            </Link>
-            <Link
-              href={`/workspace/${project.id}/design`}
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              返回设计书预览
-            </Link>
-          </div>
-        </div>
+        <WorkspaceQuickLinks
+          title="继续查看其他页面"
+          description="你可以结合工作区、设计书预览和设计书确认页，继续推进当前项目。"
+          links={[
+            { href: `/workspace/${project.id}`, label: "返回工作区" },
+            { href: `/workspace/${project.id}/review`, label: "返回设计书确认" },
+            { href: `/workspace/${project.id}/design`, label: "返回设计书预览", variant: "primary" },
+          ]}
+        />
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
+import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { buildDesignBrief } from "@/lib/server/design-brief";
@@ -32,56 +33,30 @@ export default async function DesignPage({ params }: DesignPageProps) {
 
   if (!project) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="设计书预览"
-              title="没有找到这个项目"
-              description="这个设计书预览对应的项目不存在，可能是链接失效，或项目还没有创建成功。"
-            />
-            <Link
-              href="/project/new"
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              回到项目创建页
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="设计书预览"
+        title="没有找到这个项目"
+        description="这个设计书预览对应的项目不存在，可能是链接失效，或者项目还没有创建成功。"
+        actions={[
+          { href: "/project/new", label: "创建新项目" },
+          { href: "/", label: "返回首页", variant: "secondary" },
+        ]}
+      />
     );
   }
 
   if (project.status !== "clarified" || !project.clarification) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="设计书预览"
-              title="你还没有完成需求澄清"
-              description="完成需求澄清后，系统才能基于你的回答整理出一份设计书预览。"
-            />
-            <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-5 text-sm leading-6 text-muted-foreground">
-              先去完成澄清问题填写，再回来查看设计书预览。
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={`/workspace/${project.id}`}
-                className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                返回工作区
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/clarify`}
-                className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                去完成需求澄清
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="设计书预览"
+        title="你还没有完成需求澄清"
+        description="完成需求澄清后，系统才能基于你的回答整理出一份设计书预览。"
+        note="先去补完澄清问题，再回来查看这一版设计书摘要。"
+        actions={[
+          { href: `/workspace/${project.id}/clarify`, label: "去完成需求澄清" },
+          { href: `/workspace/${project.id}`, label: "返回工作区", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -90,23 +65,15 @@ export default async function DesignPage({ params }: DesignPageProps) {
 
   if (!brief) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="设计书预览"
-              title="暂时还不能生成设计书预览"
-              description="当前项目数据还不完整，请先返回工作区检查澄清回答是否已经保存。"
-            />
-            <Link
-              href={`/workspace/${project.id}`}
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              返回工作区
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="设计书预览"
+        title="暂时还不能生成设计书预览"
+        description="当前项目数据还不完整，请先返回工作区检查澄清回答是否已经保存。"
+        actions={[
+          { href: `/workspace/${project.id}`, label: "返回工作区" },
+          { href: `/workspace/${project.id}/clarify`, label: "返回需求澄清", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -173,32 +140,15 @@ export default async function DesignPage({ params }: DesignPageProps) {
             </DetailSection>
           </article>
 
-          <aside className="surface-panel space-y-4 p-6">
-            <h2 className="text-lg font-semibold text-slate-900">继续推进</h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              如果这版设计书摘要已经足够清晰，下一步建议先进入确认页，再正式切到任务执行流程。
-            </p>
-            <div className="flex flex-col gap-3">
-              <Link
-                href={`/workspace/${project.id}/review`}
-                className="inline-flex justify-center rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                去确认设计书
-              </Link>
-              <Link
-                href={`/workspace/${project.id}`}
-                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                返回工作区
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/clarify`}
-                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                返回澄清页
-              </Link>
-            </div>
-          </aside>
+          <WorkspaceQuickLinks
+            title="继续推进"
+            description="如果这版设计书摘要已经足够清晰，下一步建议先进入确认页，再正式切到任务执行流程。"
+            links={[
+              { href: `/workspace/${project.id}/review`, label: "去确认设计书", variant: "primary" },
+              { href: `/workspace/${project.id}`, label: "返回工作区" },
+              { href: `/workspace/${project.id}/clarify`, label: "返回需求澄清" },
+            ]}
+          />
         </div>
       </div>
     </section>

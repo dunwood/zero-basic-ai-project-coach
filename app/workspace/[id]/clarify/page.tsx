@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { ClarifyForm } from "@/components/workspace/clarify-form";
+import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
+import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { clarifyQuestions } from "@/lib/constants/clarify-questions";
@@ -18,23 +19,15 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
 
   if (!project) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="需求澄清"
-              title="没有找到这个项目"
-              description="这个澄清页对应的项目不存在，可能是链接失效或项目还没有创建成功。"
-            />
-            <Link
-              href="/project/new"
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              回到项目创建页
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="需求澄清"
+        title="没有找到这个项目"
+        description="这个澄清页对应的项目不存在，可能是链接失效，或者项目还没有创建成功。"
+        actions={[
+          { href: "/project/new", label: "创建新项目" },
+          { href: "/", label: "返回首页", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -73,21 +66,15 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
             </div>
           </article>
 
-          <aside className="surface-panel space-y-4 p-6">
-            <h2 className="text-lg font-semibold text-slate-900">后续入口占位</h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              后续这里会接入 AI 引导式澄清，帮助你逐步明确目标用户、核心问题和最小可用功能。
-            </p>
-            <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
-              当前版本会保存你的澄清回答，但还不会生成设计书或接入真实 AI。
-            </div>
-            <Link
-              href={`/workspace/${project.id}`}
-              className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-            >
-              返回项目工作区
-            </Link>
-          </aside>
+          <WorkspaceQuickLinks
+            title="继续推进"
+            description="当前版本会保存你的澄清回答，但还不会接入真实 AI。完成这一步后，就可以继续查看设计书预览。"
+            links={[
+              { href: `/workspace/${project.id}`, label: "返回工作区" },
+              { href: `/workspace/${project.id}/project`, label: "查看项目详情" },
+              { href: `/workspace/${project.id}/design`, label: "去设计书预览", variant: "primary" },
+            ]}
+          />
         </div>
       </div>
     </section>

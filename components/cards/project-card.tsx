@@ -48,7 +48,7 @@ export function ProjectCard(project: ProjectCardProps) {
         href={nextAction.href}
         className="inline-flex w-fit rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
       >
-        继续项目
+        {nextAction.label}
       </Link>
     </article>
   );

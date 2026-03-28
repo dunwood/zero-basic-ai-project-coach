@@ -4,6 +4,7 @@ import { StatusCard } from "@/components/cards/status-card";
 import { FAQSection } from "@/components/sections/faq-section";
 import { HeroSection } from "@/components/sections/hero-section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { deploymentChecklist } from "@/lib/data/deployment-checklist";
 import { statusOptions } from "@/lib/data/status-options";
 import { listRecentProjects } from "@/lib/server/projects";
 import type { RecentProjectSummary } from "@/lib/types/project";
@@ -52,6 +53,7 @@ export default async function HomePage() {
 
           {projectsError ? (
             <div className="surface-panel space-y-4 p-6">
+              <h3 className="text-lg font-semibold text-slate-900">最近项目暂时不可用</h3>
               <p className="text-sm leading-6 text-muted-foreground">{projectsError}</p>
               <Link
                 href="/project/new"
@@ -68,9 +70,9 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="surface-panel space-y-4 p-6">
-              <h3 className="text-lg font-semibold text-slate-900">你还没有开始中的项目</h3>
+              <h3 className="text-lg font-semibold text-slate-900">你还没有最近项目</h3>
               <p className="text-sm leading-6 text-muted-foreground">
-                先创建一个项目，我们会带你从想法输入、需求澄清、设计书预览一步步走到任务执行。
+                先创建第一个项目，我们会带你从想法输入、需求澄清、设计书预览一路走到任务执行。
               </p>
               <Link
                 href="/project/new"
@@ -80,6 +82,27 @@ export default async function HomePage() {
               </Link>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="section-space">
+        <div className="container-shell space-y-8">
+          <SectionHeader
+            eyebrow="部署前检查"
+            title="上线前，先把这四件小事再确认一遍"
+            description="这一版先用静态检查清单帮你做最后收口，避免项目流程和文案看起来还没连起来。"
+          />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {deploymentChecklist.map((item, index) => (
+              <div key={item} className="surface-panel p-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                  检查 {index + 1}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

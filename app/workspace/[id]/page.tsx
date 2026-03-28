@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
+import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
+import { deploymentChecklist } from "@/lib/data/deployment-checklist";
 import { ensureProjectTasks, getProjectById } from "@/lib/server/projects";
 import { getProjectOverview } from "@/lib/project-stage";
 import { buildTaskExecutionState } from "@/lib/server/task-plan";
@@ -27,28 +30,16 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
 
   if (!baseProject) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="项目工作区"
-              title="没有找到这个项目"
-              description="可能是链接已经失效，或这个项目还没有创建成功。"
-            />
-            <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-5">
-              <p className="text-sm leading-6 text-muted-foreground">
-                你可以回到项目创建页，重新提交你的项目想法。
-              </p>
-            </div>
-            <Link
-              href="/project/new"
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              回到项目创建页
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="项目工作区"
+        title="没有找到这个项目"
+        description="可能是链接已经失效，或者这个项目还没有创建成功。"
+        note="你可以重新创建一个项目，系统会从想法输入开始，带你继续走完整条路径。"
+        actions={[
+          { href: "/project/new", label: "创建新项目" },
+          { href: "/", label: "返回首页", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -111,6 +102,12 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
               >
                 查看项目详情
               </Link>
+              <Link
+                href="/"
+                className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                返回首页
+              </Link>
             </div>
           </div>
 
@@ -146,6 +143,18 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
           stages={overview.stages}
           currentKey={overview.currentStageKey}
           showPager={false}
+        />
+
+        <WorkspaceQuickLinks
+          title="常用入口"
+          description="如果你这次只是想回看某一页，或者从中间某个阶段继续，也可以直接从这里进入。"
+          links={[
+            { href: `/workspace/${project.id}/project`, label: "项目详情" },
+            { href: `/workspace/${project.id}/clarify`, label: "需求澄清" },
+            { href: `/workspace/${project.id}/design`, label: "设计书预览" },
+            { href: `/workspace/${project.id}/review`, label: "设计书确认" },
+            { href: `/workspace/${project.id}/tasks`, label: "任务执行台", variant: "primary" },
+          ]}
         />
 
         {project.status === "clarified" ? (
@@ -206,6 +215,27 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
             </div>
           </section>
         ) : null}
+
+        <section className="surface-panel space-y-5 p-6">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">部署前检查</p>
+            <h2 className="text-xl font-semibold text-slate-900">上线前再过一遍关键收口项</h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              当前版本已经把主要流程串起来了。正式演示或部署前，可以先按这份清单快速自检。
+            </p>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {deploymentChecklist.map((item, index) => (
+              <div key={item} className="rounded-2xl border border-border bg-white px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                  检查 {index + 1}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </section>
   );

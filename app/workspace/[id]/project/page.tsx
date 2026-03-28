@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { ProjectDetailsForm } from "@/components/workspace/project-details-form";
+import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
+import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getProjectById } from "@/lib/server/projects";
@@ -27,23 +28,15 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
   if (!project) {
     return (
-      <section className="section-space">
-        <div className="container-shell">
-          <div className="surface-panel max-w-3xl space-y-5 p-8">
-            <SectionHeader
-              eyebrow="项目详情"
-              title="没有找到这个项目"
-              description="这个项目详情页对应的项目不存在，可能是链接失效，或项目还没有创建成功。"
-            />
-            <Link
-              href="/project/new"
-              className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-              回到项目创建页
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WorkspaceEmptyState
+        eyebrow="项目详情"
+        title="没有找到这个项目"
+        description="这个项目详情页对应的项目不存在，可能是链接失效，或者项目还没有创建成功。"
+        actions={[
+          { href: "/project/new", label: "创建新项目" },
+          { href: "/", label: "返回首页", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -106,42 +99,15 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </div>
           </div>
 
-          <aside className="surface-panel space-y-5 p-6">
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">快捷入口</p>
-              <h2 className="text-xl font-semibold text-slate-900">{project.title}</h2>
-              <p className="text-sm leading-6 text-muted-foreground">
-                保存后你可以直接继续去澄清、设计书预览或任务执行，不需要重新创建项目。
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Link
-                href={`/workspace/${project.id}`}
-                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                返回工作区
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/clarify`}
-                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                去需求澄清
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/design`}
-                className="inline-flex justify-center rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-              >
-                去设计书预览
-              </Link>
-              <Link
-                href={`/workspace/${project.id}/tasks`}
-                className="inline-flex justify-center rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                去任务执行页
-              </Link>
-            </div>
-          </aside>
+          <WorkspaceQuickLinks
+            description="保存后你可以直接继续去澄清、设计书预览或任务执行，不需要重新创建项目。"
+            links={[
+              { href: `/workspace/${project.id}`, label: "返回工作区" },
+              { href: `/workspace/${project.id}/clarify`, label: "去需求澄清" },
+              { href: `/workspace/${project.id}/design`, label: "去设计书预览" },
+              { href: `/workspace/${project.id}/tasks`, label: "去任务执行页", variant: "primary" },
+            ]}
+          />
         </div>
       </div>
     </section>
