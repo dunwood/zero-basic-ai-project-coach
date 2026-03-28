@@ -1,8 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { clarifyQuestionKeys } from "@/lib/constants/clarify-questions";
 import type {
+  ClarificationAnswers,
   CreateProjectInput,
+  ProjectClarificationRecord,
   ProjectRecord,
   ProjectStatus,
+  SaveProjectClarificationInput,
   UpdateProjectStatusInput,
 } from "@/lib/types/project";
 
@@ -38,6 +42,12 @@ export function toProjectRecord(project: {
   idea: string;
   status: ProjectStatus;
   createdAt: Date;
+  clarification?: {
+    projectId: string;
+    answers: unknown;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
 }): ProjectRecord {
   return {
     id: project.id,
@@ -45,6 +55,21 @@ export function toProjectRecord(project: {
     idea: project.idea,
     status: project.status,
     createdAt: project.createdAt.toISOString(),
+    clarification: project.clarification ? toProjectClarificationRecord(project.clarification) : null,
+  };
+}
+
+export function toProjectClarificationRecord(clarification: {
+  projectId: string;
+  answers: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+}): ProjectClarificationRecord {
+  return {
+    projectId: clarification.projectId,
+    answers: clarification.answers as ClarificationAnswers,
+    createdAt: clarification.createdAt.toISOString(),
+    updatedAt: clarification.updatedAt.toISOString(),
   };
 }
 
@@ -60,6 +85,14 @@ export async function createProject(input: CreateProjectInput) {
       idea: true,
       status: true,
       createdAt: true,
+      clarification: {
+        select: {
+          projectId: true,
+          answers: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -75,6 +108,14 @@ export async function getProjectById(id: string) {
       idea: true,
       status: true,
       createdAt: true,
+      clarification: {
+        select: {
+          projectId: true,
+          answers: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -102,6 +143,14 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
       idea: true,
       status: true,
       createdAt: true,
+      clarification: {
+        select: {
+          projectId: true,
+          answers: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -122,8 +171,87 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
       idea: true,
       status: true,
       createdAt: true,
+      clarification: {
+        select: {
+          projectId: true,
+          answers: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
   return toProjectRecord(project as typeof project & { status: ProjectStatus });
+}
+
+export function validateClarificationAnswersInput(input: Partial<SaveProjectClarificationInput>) {
+  if (!input.answers || typeof input.answers !== "object" || Array.isArray(input.answers)) {
+    return { error: "请先完成所有澄清回答。" };
+  }
+
+  const answers: ClarificationAnswers = {};
+
+  for (const key of clarifyQuestionKeys) {
+    const value = input.answers[key];
+
+    if (typeof value !== "string" || !value.trim()) {
+      return { error: "请先完成所有澄清回答。" };
+    }
+
+    answers[key] = value.trim();
+  }
+
+  return { answers };
+}
+
+export async function saveProjectClarification(id: string, answers: ClarificationAnswers) {
+  const existingProject = await prisma.project.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const clarification = await prisma.projectClarification.upsert({
+    where: { projectId: id },
+    update: { answers },
+    create: {
+      projectId: id,
+      answers,
+    },
+    select: {
+      projectId: true,
+      answers: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  const project = await prisma.project.update({
+    where: { id },
+    data: { status: "clarified" },
+    select: {
+      id: true,
+      title: true,
+      idea: true,
+      status: true,
+      createdAt: true,
+      clarification: {
+        select: {
+          projectId: true,
+          answers: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  return {
+    project: toProjectRecord(project as typeof project & { status: ProjectStatus }),
+    clarification: toProjectClarificationRecord(clarification),
+  };
 }

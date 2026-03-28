@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ClarifyForm } from "@/components/workspace/clarify-form";
 import { SectionHeader } from "@/components/ui/section-header";
 import { clarifyQuestions } from "@/lib/constants/clarify-questions";
 import { getProjectById } from "@/lib/server/projects";
@@ -35,6 +36,11 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
     );
   }
 
+  const initialAnswers = clarifyQuestions.reduce<Record<string, string>>((accumulator, question) => {
+    accumulator[question.key] = project.clarification?.answers?.[question.key] ?? "";
+    return accumulator;
+  }, {});
+
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
@@ -57,15 +63,8 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm font-medium text-slate-900">建议先回答这些问题</p>
-              {clarifyQuestions.map((question, index) => (
-                <div key={question} className="rounded-2xl border border-border bg-white px-5 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
-                    问题 {index + 1}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-800">{question}</p>
-                </div>
-              ))}
+              <p className="text-sm font-medium text-slate-900">请先完成这几项关键澄清</p>
+              <ClarifyForm projectId={project.id} initialAnswers={initialAnswers} />
             </div>
           </article>
 
@@ -75,7 +74,7 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
               后续这里会接入 AI 引导式澄清，帮助你逐步明确目标用户、核心问题和最小可用功能。
             </p>
             <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
-              当前版本先展示静态问题列表，不保存回答，也不生成设计书。
+              当前版本会保存你的澄清回答，但还不会生成设计书或接入真实 AI。
             </div>
             <Link
               href={`/workspace/${project.id}`}

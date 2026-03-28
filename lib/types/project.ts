@@ -3,7 +3,16 @@ export type CreateProjectInput = {
   idea: string;
 };
 
-export type ProjectStatus = "draft" | "clarifying";
+export type ProjectStatus = "draft" | "clarifying" | "clarified";
+
+export type ClarificationAnswers = Record<string, string>;
+
+export type ProjectClarificationRecord = {
+  projectId: string;
+  answers: ClarificationAnswers;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type ProjectRecord = {
   id: string;
@@ -11,8 +20,13 @@ export type ProjectRecord = {
   idea: string;
   status: ProjectStatus;
   createdAt: string;
+  clarification: ProjectClarificationRecord | null;
 };
 
 export type UpdateProjectStatusInput = {
   status: ProjectStatus;
+};
+
+export type SaveProjectClarificationInput = {
+  answers: ClarificationAnswers;
 };

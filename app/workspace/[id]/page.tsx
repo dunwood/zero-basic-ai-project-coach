@@ -56,7 +56,11 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
         <SectionHeader
           eyebrow="项目工作区"
           title={project.title}
-          description="这里是当前项目的基础工作区。下一步会在这里继续把你的想法澄清成可执行方案。"
+          description={
+            project.status === "clarified"
+              ? "你已经完成了需求澄清。下一步，我们会基于这些回答继续生成设计书。"
+              : "这里是当前项目的基础工作区。下一步会在这里继续把你的想法澄清成可执行方案。"
+          }
         />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
@@ -76,14 +80,46 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
                 <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{project.idea}</p>
               </div>
             </div>
+
+            {project.status === "clarified" ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5">
+                <p className="text-sm font-semibold text-emerald-800">已完成需求澄清</p>
+                <p className="mt-2 text-sm leading-6 text-emerald-700">
+                  当前项目已保存澄清回答，可继续进入后续设计书生成流程。
+                </p>
+                <p className="mt-3 text-xs text-emerald-700/80">
+                  已回答问题数：{project.clarification ? Object.keys(project.clarification.answers).length : 0}
+                </p>
+              </div>
+            ) : null}
           </article>
 
           <aside className="surface-panel space-y-4 p-6">
             <h2 className="text-lg font-semibold text-slate-900">下一步</h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              先把你的需求澄清清楚，再继续往设计书和执行方案推进。这里先提供一个最小入口，进入固定问题引导页。
-            </p>
-            <ClarifyEntryButton projectId={project.id} status={project.status} />
+            {project.status === "clarified" ? (
+              <>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  澄清回答已经保存完成。下一步，我们会根据这些回答生成一份结构化设计书。
+                </p>
+                <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-4 text-sm leading-6 text-muted-foreground">
+                  设计书生成功能即将开放，这里先保留为下一阶段入口占位。
+                </div>
+                <button
+                  type="button"
+                  disabled
+                  className="w-full rounded-full bg-slate-300 px-4 py-3 text-sm font-medium text-white"
+                >
+                  设计书生成即将开放
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  先把你的需求澄清清楚，再继续往设计书和执行方案推进。这里先提供一个最小入口，进入固定问题引导页。
+                </p>
+                <ClarifyEntryButton projectId={project.id} status={project.status} />
+              </>
+            )}
           </aside>
         </div>
       </div>
