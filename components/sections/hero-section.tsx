@@ -12,10 +12,18 @@ export function HeroSection() {
               </span>
               <div className="space-y-4">
                 <h1 className="text-4xl font-semibold tracking-tight text-slate-900 md:text-6xl">
-                  不懂代码，也能一步步开始做自己的 AI 项目
+                  零基础做 AI 项目，先别急着开工，先把路线和工具选对
                 </h1>
                 <p className="max-w-xl text-base leading-8 text-muted-foreground md:text-lg">
-                  先帮你选模型和工具，再带你完成安装、项目设计和执行拆解。你不用一下子学很多，只要先走通第一步。
+                  首页的第一步不是看项目列表，而是先帮你确定适合自己的模型、工具和起步路线。选对以后，再进入项目想法整理、设计书和任务执行会更顺。
+                </p>
+              </div>
+
+              <div className="rounded-3xl border border-dashed border-border bg-white/80 px-5 py-4">
+                <p className="text-sm leading-7 text-slate-700">
+                  如果你是零基础用户，建议先从
+                  <span className="font-semibold text-slate-900"> 路线 / 工具选择 </span>
+                  开始；只有你已经很确定工具环境时，再直接进入项目创建。
                 </p>
               </div>
 
@@ -24,13 +32,13 @@ export function HeroSection() {
                   href="/routes"
                   className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
                 >
-                  开始选择路线
+                  先选路线和工具
                 </Link>
                 <Link
                   href="/project/new"
                   className="inline-flex items-center justify-center rounded-full border border-border bg-white px-6 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-400"
                 >
-                  直接开始做项目
+                  我已准备好，直接创建项目
                 </Link>
               </div>
             </div>

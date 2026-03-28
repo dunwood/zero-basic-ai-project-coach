@@ -35,6 +35,23 @@ export default async function HomePage() {
 
       <section className="pb-8">
         <div className="container-shell">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                起步建议
+              </p>
+              <h2 className="text-2xl font-semibold text-slate-900">
+                如果你还不确定怎么开始，先选路线，再建项目
+              </h2>
+            </div>
+            <Link
+              href="/routes"
+              className="inline-flex rounded-full border border-border bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            >
+              查看全部路线
+            </Link>
+          </div>
+
           <div className="grid gap-5 md:grid-cols-3">
             {statusOptions.map((item) => (
               <StatusCard key={item.title} {...item} />
@@ -46,21 +63,47 @@ export default async function HomePage() {
       <section className="section-space">
         <div className="container-shell space-y-8">
           <SectionHeader
+            eyebrow="你将获得什么"
+            title="不是一堆术语，而是一条能继续走下去的起步路径"
+            description="首页先负责帮零基础用户看清方向，后续再把项目逐步推进到设计书和任务执行。"
+          />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {outcomes.map((item) => (
+              <div key={item} className="surface-panel p-6">
+                <p className="text-base leading-7 text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-space">
+        <div className="container-shell space-y-8">
+          <SectionHeader
             eyebrow="最近项目"
-            title="回到首页，也能继续上一次的项目"
-            description="你最近创建或更新过的项目会展示在这里，方便你快速回到对应工作区继续推进。"
+            title="如果你已经在推进项目，可以从这里继续"
+            description="最近项目仍然保留在首页，方便你快速回到工作区继续，但它不再作为首页的主要起点。"
           />
 
           {projectsError ? (
             <div className="surface-panel space-y-4 p-6">
               <h3 className="text-lg font-semibold text-slate-900">最近项目暂时不可用</h3>
               <p className="text-sm leading-6 text-muted-foreground">{projectsError}</p>
-              <Link
-                href="/project/new"
-                className="inline-flex rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                新建项目
-              </Link>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/routes"
+                  className="inline-flex rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                >
+                  先去选路线
+                </Link>
+                <Link
+                  href="/project/new"
+                  className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+                >
+                  直接创建项目
+                </Link>
+              </div>
             </div>
           ) : recentProjects.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -72,14 +115,22 @@ export default async function HomePage() {
             <div className="surface-panel space-y-4 p-6">
               <h3 className="text-lg font-semibold text-slate-900">你还没有最近项目</h3>
               <p className="text-sm leading-6 text-muted-foreground">
-                先创建第一个项目，我们会带你从想法输入、需求澄清、设计书预览一路走到任务执行。
+                如果你是第一次来，建议先去看路线和工具；如果你已经准备好，也可以直接创建项目。
               </p>
-              <Link
-                href="/project/new"
-                className="inline-flex rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                现在开始做项目
-              </Link>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/routes"
+                  className="inline-flex rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                >
+                  先去选路线
+                </Link>
+                <Link
+                  href="/project/new"
+                  className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+                >
+                  直接创建项目
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -100,24 +151,6 @@ export default async function HomePage() {
                   检查 {index + 1}
                 </p>
                 <p className="mt-3 text-sm leading-7 text-slate-700">{item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-space">
-        <div className="container-shell space-y-8">
-          <SectionHeader
-            eyebrow="你将获得什么"
-            title="不是一堆术语，而是一条能继续走下去的起步路径"
-            description="这一版先把最关键的四件事展示清楚，让用户知道这个产品最后会帮自己走到哪里。"
-          />
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {outcomes.map((item) => (
-              <div key={item} className="surface-panel p-6">
-                <p className="text-base leading-7 text-slate-700">{item}</p>
               </div>
             ))}
           </div>
