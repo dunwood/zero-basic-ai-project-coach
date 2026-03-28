@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getRecentProjectAction } from "@/lib/project-stage";
 import type { RecentProjectSummary } from "@/lib/types/project";
 
 type ProjectCardProps = RecentProjectSummary;
@@ -18,30 +19,35 @@ const statusLabelMap: Record<RecentProjectSummary["status"], string> = {
   clarified: "已澄清",
 };
 
-export function ProjectCard({ id, title, status, updatedAt, taskSummary }: ProjectCardProps) {
+export function ProjectCard(project: ProjectCardProps) {
+  const nextAction = getRecentProjectAction(project);
+
   return (
     <article className="surface-panel flex h-full flex-col justify-between gap-5 p-6">
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex rounded-full bg-accent px-3 py-1 text-xs font-semibold text-blue-800">
-            {statusLabelMap[status]}
+            {statusLabelMap[project.status]}
           </span>
-          <span className="text-xs text-muted-foreground">最近更新：{formatDate(updatedAt)}</span>
+          <span className="text-xs text-muted-foreground">
+            最近更新：{formatDate(project.updatedAt)}
+          </span>
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
+          <h3 className="text-xl font-semibold text-slate-900">{project.title}</h3>
           <p className="text-sm leading-6 text-muted-foreground">
-            任务进度：{taskSummary.done} / {taskSummary.total}
+            任务进度：{project.taskSummary.done} / {project.taskSummary.total}
           </p>
+          <p className="text-sm leading-6 text-slate-700">{nextAction.description}</p>
         </div>
       </div>
 
       <Link
-        href={`/workspace/${id}`}
+        href={nextAction.href}
         className="inline-flex w-fit rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
       >
-        继续这个项目
+        {nextAction.label}
       </Link>
     </article>
   );

@@ -50,6 +50,24 @@ export type RecentProjectSummary = {
   };
 };
 
+export type ProjectStageKey = "created" | "clarify" | "design" | "tasks";
+
+export type ProjectStageState = "completed" | "current" | "upcoming";
+
+export type ProjectNextAction = {
+  label: string;
+  href: string;
+  description: string;
+};
+
+export type ProjectStageItem = {
+  key: ProjectStageKey;
+  title: string;
+  description: string;
+  href: string;
+  state: ProjectStageState;
+};
+
 export type UpdateProjectStatusInput = {
   status: ProjectStatus;
 };
