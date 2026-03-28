@@ -33,8 +33,21 @@ export type ProjectRecord = {
   idea: string;
   status: ProjectStatus;
   createdAt: string;
+  updatedAt: string;
   clarification: ProjectClarificationRecord | null;
   tasks: ProjectTaskRecord[];
+};
+
+export type RecentProjectSummary = {
+  id: string;
+  title: string;
+  status: ProjectStatus;
+  createdAt: string;
+  updatedAt: string;
+  taskSummary: {
+    total: number;
+    done: number;
+  };
 };
 
 export type UpdateProjectStatusInput = {

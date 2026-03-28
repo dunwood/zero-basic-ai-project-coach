@@ -1,6 +1,25 @@
 import { NextResponse } from "next/server";
-import { createProject, validateProjectInput } from "@/lib/server/projects";
+import { createProject, listRecentProjects, validateProjectInput } from "@/lib/server/projects";
 import type { CreateProjectInput } from "@/lib/types/project";
+
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  try {
+    const projects = await listRecentProjects();
+
+    return NextResponse.json({
+      success: true,
+      projects,
+    });
+  } catch (error) {
+    console.error("GET /api/projects failed:", error);
+    return NextResponse.json(
+      { success: false, error: "最近项目读取失败，请稍后再试。" },
+      { status: 500 },
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {

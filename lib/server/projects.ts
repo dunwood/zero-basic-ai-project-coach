@@ -8,6 +8,7 @@ import type {
   ProjectRecord,
   ProjectStatus,
   ProjectTaskRecord,
+  RecentProjectSummary,
   SaveProjectClarificationInput,
   UpdateProjectStatusInput,
   UpdateProjectTaskInput,
@@ -22,6 +23,7 @@ const projectSelect = {
   idea: true,
   status: true,
   createdAt: true,
+  updatedAt: true,
   clarification: {
     select: {
       projectId: true,
@@ -55,6 +57,7 @@ type ProjectPayload = {
   idea: string;
   status: ProjectStatus;
   createdAt: Date;
+  updatedAt: Date;
   clarification?: {
     projectId: string;
     answers: unknown;
@@ -105,6 +108,7 @@ export function toProjectRecord(project: ProjectPayload): ProjectRecord {
     idea: project.idea,
     status: project.status,
     createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString(),
     clarification: project.clarification ? toProjectClarificationRecord(project.clarification) : null,
     tasks: project.tasks.map(toProjectTaskRecord),
   };
@@ -173,6 +177,40 @@ export async function getProjectById(id: string) {
   }
 
   return toProjectRecord(project as ProjectPayload);
+}
+
+export async function listRecentProjects(limit = 6): Promise<RecentProjectSummary[]> {
+  const projects = await prisma.project.findMany({
+    orderBy: {
+      updatedAt: "desc",
+    },
+    take: limit,
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      tasks: {
+        select: {
+          id: true,
+          isDone: true,
+        },
+      },
+    },
+  });
+
+  return projects.map((project) => ({
+    id: project.id,
+    title: project.title,
+    status: project.status as ProjectStatus,
+    createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString(),
+    taskSummary: {
+      total: project.tasks.length,
+      done: project.tasks.filter((task) => task.isDone).length,
+    },
+  }));
 }
 
 export function validateProjectStatusInput(input: Partial<UpdateProjectStatusInput>) {
