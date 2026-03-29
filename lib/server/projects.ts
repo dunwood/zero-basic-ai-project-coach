@@ -1,5 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { clarifyQuestionKeys } from "@/lib/constants/clarify-questions";
+import {
+  createLocalProject,
+  ensureLocalProjectTasks,
+  getLocalProjectById,
+  getLocalProjectTasks,
+  listLocalRecentProjects,
+  saveLocalProjectClarification,
+  updateLocalProjectDetails,
+  updateLocalProjectStatus,
+  updateLocalProjectTask,
+} from "@/lib/server/local-project-store";
 import { flattenTaskPlan } from "@/lib/server/task-plan";
 import type {
   ClarificationAnswers,
@@ -79,6 +90,33 @@ type ProjectPayload = {
   }>;
 };
 
+function isDatabaseConnectionError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /Can't reach database server|P1001|prepared statement|ECONNREFUSED|timeout/i.test(
+    error.message,
+  );
+}
+
+async function withLocalProjectFallback<T>(
+  action: string,
+  prismaOperation: () => Promise<T>,
+  fallbackOperation: () => Promise<T>,
+) {
+  try {
+    return await prismaOperation();
+  } catch (error) {
+    if (!isDatabaseConnectionError(error)) {
+      throw error;
+    }
+
+    console.error(`[projects] ${action} prisma failed, falling back to local store:`, error);
+    return fallbackOperation();
+  }
+}
+
 export function validateProjectInput(input: CreateProjectInput) {
   const title = input.title.trim();
   const idea = input.idea.trim();
@@ -107,19 +145,6 @@ export function validateProjectDetailsInput(input: Partial<UpdateProjectDetailsI
     title: input.title ?? "",
     idea: input.idea ?? "",
   });
-}
-
-export function toProjectRecord(project: ProjectPayload): ProjectRecord {
-  return {
-    id: project.id,
-    title: project.title,
-    idea: project.idea,
-    status: project.status,
-    createdAt: project.createdAt.toISOString(),
-    updatedAt: project.updatedAt.toISOString(),
-    clarification: project.clarification ? toProjectClarificationRecord(project.clarification) : null,
-    tasks: project.tasks.map(toProjectTaskRecord),
-  };
 }
 
 export function toProjectClarificationRecord(clarification: {
@@ -162,63 +187,94 @@ export function toProjectTaskRecord(task: {
   };
 }
 
-export async function createProject(input: CreateProjectInput) {
-  const project = await prisma.project.create({
-    data: {
-      title: input.title,
-      idea: input.idea,
-    },
-    select: projectSelect,
-  });
+export function toProjectRecord(project: ProjectPayload): ProjectRecord {
+  return {
+    id: project.id,
+    title: project.title,
+    idea: project.idea,
+    status: project.status,
+    createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString(),
+    clarification: project.clarification ? toProjectClarificationRecord(project.clarification) : null,
+    tasks: project.tasks.map(toProjectTaskRecord),
+  };
+}
 
-  return toProjectRecord(project as ProjectPayload);
+export async function createProject(input: CreateProjectInput) {
+  return withLocalProjectFallback(
+    "createProject",
+    async () => {
+      const project = await prisma.project.create({
+        data: {
+          title: input.title,
+          idea: input.idea,
+        },
+        select: projectSelect,
+      });
+
+      return toProjectRecord(project as ProjectPayload);
+    },
+    async () => createLocalProject(input),
+  );
 }
 
 export async function getProjectById(id: string) {
-  const project = await prisma.project.findUnique({
-    where: { id },
-    select: projectSelect,
-  });
+  return withLocalProjectFallback(
+    "getProjectById",
+    async () => {
+      const project = await prisma.project.findUnique({
+        where: { id },
+        select: projectSelect,
+      });
 
-  if (!project) {
-    return null;
-  }
+      if (!project) {
+        return null;
+      }
 
-  return toProjectRecord(project as ProjectPayload);
+      return toProjectRecord(project as ProjectPayload);
+    },
+    async () => getLocalProjectById(id),
+  );
 }
 
 export async function listRecentProjects(limit = 6): Promise<RecentProjectSummary[]> {
-  const projects = await prisma.project.findMany({
-    orderBy: {
-      updatedAt: "desc",
-    },
-    take: limit,
-    select: {
-      id: true,
-      title: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-      tasks: {
+  return withLocalProjectFallback(
+    "listRecentProjects",
+    async () => {
+      const projects = await prisma.project.findMany({
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: limit,
         select: {
           id: true,
-          isDone: true,
+          title: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          tasks: {
+            select: {
+              id: true,
+              isDone: true,
+            },
+          },
         },
-      },
-    },
-  });
+      });
 
-  return projects.map((project) => ({
-    id: project.id,
-    title: project.title,
-    status: project.status as ProjectStatus,
-    createdAt: project.createdAt.toISOString(),
-    updatedAt: project.updatedAt.toISOString(),
-    taskSummary: {
-      total: project.tasks.length,
-      done: project.tasks.filter((task) => task.isDone).length,
+      return projects.map((project) => ({
+        id: project.id,
+        title: project.title,
+        status: project.status as ProjectStatus,
+        createdAt: project.createdAt.toISOString(),
+        updatedAt: project.updatedAt.toISOString(),
+        taskSummary: {
+          total: project.tasks.length,
+          done: project.tasks.filter((task) => task.isDone).length,
+        },
+      }));
     },
-  }));
+    async () => listLocalRecentProjects(limit),
+  );
 }
 
 export function validateProjectStatusInput(input: Partial<UpdateProjectStatusInput>) {
@@ -230,55 +286,67 @@ export function validateProjectStatusInput(input: Partial<UpdateProjectStatusInp
 }
 
 export async function updateProjectStatus(id: string, status: ProjectStatus) {
-  const existingProject = await prisma.project.findUnique({
-    where: { id },
-    select: projectSelect,
-  });
+  return withLocalProjectFallback(
+    "updateProjectStatus",
+    async () => {
+      const existingProject = await prisma.project.findUnique({
+        where: { id },
+        select: projectSelect,
+      });
 
-  if (!existingProject) {
-    return null;
-  }
+      if (!existingProject) {
+        return null;
+      }
 
-  if (existingProject.status === status) {
-    return toProjectRecord(existingProject as ProjectPayload);
-  }
+      if (existingProject.status === status) {
+        return toProjectRecord(existingProject as ProjectPayload);
+      }
 
-  const project = await prisma.project.update({
-    where: { id },
-    data: { status },
-    select: projectSelect,
-  });
+      const project = await prisma.project.update({
+        where: { id },
+        data: { status },
+        select: projectSelect,
+      });
 
-  return toProjectRecord(project as ProjectPayload);
+      return toProjectRecord(project as ProjectPayload);
+    },
+    async () => updateLocalProjectStatus(id, status),
+  );
 }
 
 export async function updateProjectDetails(id: string, input: UpdateProjectDetailsInput) {
-  const existingProject = await prisma.project.findUnique({
-    where: { id },
-    select: projectSelect,
-  });
+  return withLocalProjectFallback(
+    "updateProjectDetails",
+    async () => {
+      const existingProject = await prisma.project.findUnique({
+        where: { id },
+        select: projectSelect,
+      });
 
-  if (!existingProject) {
-    return null;
-  }
+      if (!existingProject) {
+        return null;
+      }
 
-  const normalizedTitle = input.title.trim();
-  const normalizedIdea = input.idea.trim();
+      const normalizedTitle = input.title.trim();
+      const normalizedIdea = input.idea.trim();
 
-  if (existingProject.title === normalizedTitle && existingProject.idea === normalizedIdea) {
-    return toProjectRecord(existingProject as ProjectPayload);
-  }
+      if (existingProject.title === normalizedTitle && existingProject.idea === normalizedIdea) {
+        return toProjectRecord(existingProject as ProjectPayload);
+      }
 
-  const project = await prisma.project.update({
-    where: { id },
-    data: {
-      title: normalizedTitle,
-      idea: normalizedIdea,
+      const project = await prisma.project.update({
+        where: { id },
+        data: {
+          title: normalizedTitle,
+          idea: normalizedIdea,
+        },
+        select: projectSelect,
+      });
+
+      return toProjectRecord(project as ProjectPayload);
     },
-    select: projectSelect,
-  });
-
-  return toProjectRecord(project as ProjectPayload);
+    async () => updateLocalProjectDetails(id, input),
+  );
 }
 
 export function validateClarificationAnswersInput(input: Partial<SaveProjectClarificationInput>) {
@@ -302,99 +370,117 @@ export function validateClarificationAnswersInput(input: Partial<SaveProjectClar
 }
 
 export async function saveProjectClarification(id: string, answers: ClarificationAnswers) {
-  const existingProject = await prisma.project.findUnique({
-    where: { id },
-    select: { id: true },
-  });
+  return withLocalProjectFallback(
+    "saveProjectClarification",
+    async () => {
+      const existingProject = await prisma.project.findUnique({
+        where: { id },
+        select: { id: true },
+      });
 
-  if (!existingProject) {
-    return null;
-  }
+      if (!existingProject) {
+        return null;
+      }
 
-  const clarification = await prisma.projectClarification.upsert({
-    where: { projectId: id },
-    update: { answers },
-    create: {
-      projectId: id,
-      answers,
+      const clarification = await prisma.projectClarification.upsert({
+        where: { projectId: id },
+        update: { answers },
+        create: {
+          projectId: id,
+          answers,
+        },
+        select: {
+          projectId: true,
+          answers: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      const project = await prisma.project.update({
+        where: { id },
+        data: { status: "clarified" },
+        select: projectSelect,
+      });
+
+      return {
+        project: toProjectRecord(project as ProjectPayload),
+        clarification: toProjectClarificationRecord(clarification),
+      };
     },
-    select: {
-      projectId: true,
-      answers: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  const project = await prisma.project.update({
-    where: { id },
-    data: { status: "clarified" },
-    select: projectSelect,
-  });
-
-  return {
-    project: toProjectRecord(project as ProjectPayload),
-    clarification: toProjectClarificationRecord(clarification),
-  };
+    async () => saveLocalProjectClarification(id, answers),
+  );
 }
 
 export async function ensureProjectTasks(id: string) {
-  const project = await prisma.project.findUnique({
-    where: { id },
-    select: projectSelect,
-  });
+  return withLocalProjectFallback(
+    "ensureProjectTasks",
+    async () => {
+      const project = await prisma.project.findUnique({
+        where: { id },
+        select: projectSelect,
+      });
 
-  if (!project) {
-    return null;
-  }
+      if (!project) {
+        return null;
+      }
 
-  const projectRecord = toProjectRecord(project as ProjectPayload);
+      const projectRecord = toProjectRecord(project as ProjectPayload);
 
-  if (projectRecord.status !== "clarified" || !projectRecord.clarification) {
-    return projectRecord;
-  }
+      if (projectRecord.status !== "clarified" || !projectRecord.clarification) {
+        return projectRecord;
+      }
 
-  if (projectRecord.tasks.length > 0) {
-    return projectRecord;
-  }
+      if (projectRecord.tasks.length > 0) {
+        return projectRecord;
+      }
 
-  const taskSeeds = flattenTaskPlan(projectRecord);
+      const taskSeeds = flattenTaskPlan(projectRecord);
 
-  if (taskSeeds.length === 0) {
-    return projectRecord;
-  }
+      if (taskSeeds.length === 0) {
+        return projectRecord;
+      }
 
-  await prisma.projectTask.createMany({
-    data: taskSeeds.map((task) => ({
-      projectId: id,
-      phaseKey: task.phaseKey,
-      phaseTitle: task.phaseTitle,
-      title: task.title,
-      description: task.description,
-      sortOrder: task.sortOrder,
-    })),
-  });
+      await prisma.projectTask.createMany({
+        data: taskSeeds.map((task) => ({
+          projectId: id,
+          phaseKey: task.phaseKey,
+          phaseTitle: task.phaseTitle,
+          title: task.title,
+          description: task.description,
+          sortOrder: task.sortOrder,
+        })),
+      });
 
-  const refreshedProject = await prisma.project.findUnique({
-    where: { id },
-    select: projectSelect,
-  });
+      const refreshedProject = await prisma.project.findUnique({
+        where: { id },
+        select: projectSelect,
+      });
 
-  if (!refreshedProject) {
-    return null;
-  }
+      if (!refreshedProject) {
+        return null;
+      }
 
-  return toProjectRecord(refreshedProject as ProjectPayload);
+      return toProjectRecord(refreshedProject as ProjectPayload);
+    },
+    async () => ensureLocalProjectTasks(id),
+  );
 }
 
 export async function getProjectTasks(id: string) {
-  const project = await ensureProjectTasks(id);
+  return withLocalProjectFallback(
+    "getProjectTasks",
+    async () => {
+      const project = await ensureProjectTasks(id);
 
-  if (!project) {
-    return null;
-  }
+      if (!project) {
+        return null;
+      }
 
-  return project.tasks;
+      return project.tasks;
+    },
+    async () => getLocalProjectTasks(id),
+  );
 }
 
 export function validateProjectTaskInput(input: Partial<UpdateProjectTaskInput>) {
@@ -406,45 +492,51 @@ export function validateProjectTaskInput(input: Partial<UpdateProjectTaskInput>)
 }
 
 export async function updateProjectTask(projectId: string, taskId: string, isDone: boolean) {
-  const existingTask = await prisma.projectTask.findFirst({
-    where: {
-      id: taskId,
-      projectId,
-    },
-    select: {
-      id: true,
-      projectId: true,
-      phaseKey: true,
-      phaseTitle: true,
-      title: true,
-      description: true,
-      sortOrder: true,
-      isDone: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  return withLocalProjectFallback(
+    "updateProjectTask",
+    async () => {
+      const existingTask = await prisma.projectTask.findFirst({
+        where: {
+          id: taskId,
+          projectId,
+        },
+        select: {
+          id: true,
+          projectId: true,
+          phaseKey: true,
+          phaseTitle: true,
+          title: true,
+          description: true,
+          sortOrder: true,
+          isDone: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
 
-  if (!existingTask) {
-    return null;
-  }
+      if (!existingTask) {
+        return null;
+      }
 
-  const task = await prisma.projectTask.update({
-    where: { id: taskId },
-    data: { isDone },
-    select: {
-      id: true,
-      projectId: true,
-      phaseKey: true,
-      phaseTitle: true,
-      title: true,
-      description: true,
-      sortOrder: true,
-      isDone: true,
-      createdAt: true,
-      updatedAt: true,
+      const task = await prisma.projectTask.update({
+        where: { id: taskId },
+        data: { isDone },
+        select: {
+          id: true,
+          projectId: true,
+          phaseKey: true,
+          phaseTitle: true,
+          title: true,
+          description: true,
+          sortOrder: true,
+          isDone: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return toProjectTaskRecord(task);
     },
-  });
-
-  return toProjectTaskRecord(task);
+    async () => updateLocalProjectTask(projectId, taskId, isDone),
+  );
 }

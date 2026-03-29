@@ -29,25 +29,25 @@ type ToolGuide = {
 
 type SetupResourceLink = {
   label: string;
-  href: string;
+  href?: string;
 };
 
 const baseSteps: Omit<SetupStep, "id">[] = [
   {
     title: "步骤 1：安装 VS Code",
-    whatToDo: "下载并安装 VS Code，按默认选项完成即可。安装后先打开一次，确认能正常进入编辑器。",
-    whereToGo: "访问 VS Code 官网，点击下载适合你系统的版本。",
+    whatToDo: "下载安装 VS Code，按默认选项完成即可。安装后先打开一次，确认能正常进入编辑器。",
+    whereToGo: "访问 VS Code 官网，下载适合你系统的版本。",
     successCheck: "你能在桌面或开始菜单里找到 VS Code，并且点击后可以正常打开。",
   },
   {
     title: "步骤 2：安装 Node.js",
-    whatToDo: "进入 Node.js 官网，下载并安装 LTS 版本。安装完成后，重新打开终端准备验证命令。",
+    whatToDo: "进入 Node.js 官网，下载安装 LTS 版本。安装完成后，重新打开终端准备验证命令。",
     whereToGo: "访问 Node.js 官网，选择 LTS 版本下载安装。",
     successCheck: "在终端输入 `node -v` 后，能看到类似 `v22.0.0` 的版本号。",
   },
   {
     title: "步骤 3：安装 Git",
-    whatToDo: "进入 Git 官网下载安装包，安装过程保持默认设置即可。装完后重新打开终端。",
+    whatToDo: "进入 Git 官网下载安装包，安装时保持默认设置即可。安装完成后重新打开终端。",
     whereToGo: "访问 Git 官网，下载适合你系统的安装包。",
     successCheck: "在终端输入 `git --version` 后，能看到类似 `git version 2.49.0` 的版本号。",
   },
@@ -55,10 +55,10 @@ const baseSteps: Omit<SetupStep, "id">[] = [
 
 const toolSetupGuide: Record<string, ToolGuide> = {
   "deepseek-opencode": {
-    fitFor: "适合想先用中文环境起步，再慢慢熟悉 AI 编程工具的人。",
+    fitFor: "适合先用中文环境起步，再慢慢熟悉 AI 编程工具的人。",
     preparation: "本页会先帮你准备 VS Code、Node.js、Git，再继续到 DeepSeek + OpenCode 的安装方向。",
     toolAction: "安装并打开 OpenCode，按界面提示完成 DeepSeek 相关登录或授权，然后进入一个空白文件夹尝试发出第一条指令。",
-    toolWhere: "先确认你的 DeepSeek 账号可用，再按 OpenCode 官方说明完成安装与登录。",
+    toolWhere: "先确认你的 DeepSeek 账号可用，再按 OpenCode 相关说明完成安装与登录。",
     toolSuccess: "你能打开 OpenCode，并看到可继续下一步的登录或聊天入口。",
   },
   "qwen-lingma": {
@@ -84,7 +84,7 @@ const toolSetupGuide: Record<string, ToolGuide> = {
   },
   "chatgpt-codex-cli": {
     fitFor: "适合愿意接触终端、希望更早熟悉命令行协作方式的用户。",
-    preparation: "本页会先帮你准备 VS Code、Node.js、Git，再继续到 ChatGPT + Codex CLI 的安装方向。",
+    preparation: "本页会先帮你准备 VS Code、Node.js、Git，再继续到 ChatGPT + Codex 的安装方向。",
     toolAction: "按 Codex 文档完成安装与登录，再进入一个空白目录做第一条最小命令练习。",
     toolWhere: "先确认你能正常访问 ChatGPT，再按 Codex 文档完成安装和登录。",
     toolSuccess: "终端能识别 Codex 相关命令，你也已经完成登录。",
@@ -138,7 +138,7 @@ function getSetupSteps(slug: string, toolName: string): SetupStep[] {
   ];
 }
 
-function getResourceLink(stepId: string, slug: string): SetupResourceLink {
+function getResourceLink(stepId: string, slug: string, toolName: string): SetupResourceLink {
   if (stepId === "tool-step") {
     const toolAction = routeToolActionLinks[slug];
 
@@ -150,8 +150,7 @@ function getResourceLink(stepId: string, slug: string): SetupResourceLink {
     }
 
     return {
-      label: "查看推荐工具",
-      href: "/routes",
+      label: `${toolName} 入口待确认`,
     };
   }
 
@@ -170,7 +169,7 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
             items={[
               { label: "返回首页", href: "/" },
               { label: "返回路线选择", href: "/routes" },
-              { label: "返回上一页", type: "back", fallbackHref: "/routes" },
+              { label: "返回上一步", type: "back", fallbackHref: "/routes" },
             ]}
           />
 
@@ -220,7 +219,7 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
           items={[
             { label: "返回首页", href: "/" },
             { label: "返回路线选择", href: "/routes" },
-            { label: "返回上一页", type: "back", fallbackHref: "/routes" },
+            { label: "返回上一步", type: "back", fallbackHref: "/routes" },
           ]}
         />
 
@@ -265,13 +264,13 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
               <div className="space-y-2">
                 <h2 className="text-xl font-semibold text-slate-900">B. 安装步骤</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  建议按顺序完成。每一步都保留了“去哪做”和“看到什么算成功”，并补上了直达链接。
+                  每一步都保留了“要做什么”“去哪里做”“官网入口”和“完成后回到这里继续”。
                 </p>
               </div>
 
               <div className="grid gap-4">
                 {setupSteps.map((step) => {
-                  const resourceLink = getResourceLink(step.id, route.id);
+                  const resourceLink = getResourceLink(step.id, route.id, route.toolName);
 
                   return (
                     <section key={step.id} className="rounded-3xl border border-border bg-white p-5">
@@ -291,14 +290,25 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
                         </div>
                       </dl>
 
-                      <a
-                        href={resourceLink.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 inline-flex rounded-full border border-border px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
-                      >
-                        {resourceLink.label}
-                      </a>
+                      {resourceLink.href ? (
+                        <a
+                          href={resourceLink.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 inline-flex rounded-full border border-border px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+                        >
+                          {resourceLink.label}
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="mt-4 inline-flex rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-400"
+                        >
+                          {resourceLink.label}
+                        </button>
+                      )}
+
                       <p className="mt-3 text-sm text-muted-foreground">完成这一项后，回到本页继续下一步。</p>
                     </section>
                   );
@@ -332,7 +342,7 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
             </div>
 
             <div className="rounded-2xl border border-dashed border-border bg-white p-4 text-sm leading-6 text-muted-foreground">
-              还没完成也没关系。你可以先回到路线选择重新挑选路线，或者留在当前页继续按步骤安装。
+              还没完成也没关系。你可以先回到路线选择重新挑路线，或者留在当前页继续按步骤安装。
             </div>
 
             <div className="flex flex-col gap-3">
@@ -351,7 +361,7 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
             </div>
 
             <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-              小提醒：这个页面只是一步一步带你完成安装，不会自动检测你的电脑，也不会代替你打开本地终端。
+              小提醒：这个页面只是一页一页带你完成安装，不会自动检测你的电脑，也不会替你打开本地终端。
             </div>
           </aside>
         </div>

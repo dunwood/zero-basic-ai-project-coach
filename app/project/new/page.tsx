@@ -62,12 +62,20 @@ function ProjectNewPageContent() {
         project?: { id: string };
       };
 
-      if (!response.ok || !data.success || !data.project) {
+      if (!response.ok || !data.success || !data.project?.id) {
+        console.error("Project creation failed on client:", {
+          status: response.status,
+          data,
+          title: nextTitle,
+          hasIdea: Boolean(nextIdea),
+        });
+
         throw new Error(data.error ?? "项目创建失败，请稍后再试。");
       }
 
       router.push(`/workspace/${data.project.id}`);
     } catch (error) {
+      console.error("Project creation submit crashed:", error);
       const message = error instanceof Error ? error.message : "项目创建失败，请稍后再试。";
       setErrorMessage(message);
     } finally {
@@ -181,7 +189,7 @@ function ProjectNewPageContent() {
                 disabled={isSubmitting}
                 className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                {isSubmitting ? "正在创建项目..." : "去创建项目并进入工作区"}
+                {isSubmitting ? "正在创建项目..." : "创建项目并进入工作区"}
               </button>
               <Link
                 href="/routes"
@@ -189,7 +197,7 @@ function ProjectNewPageContent() {
               >
                 返回上一步
               </Link>
-              <p className="text-sm text-muted-foreground">创建成功后，回到工作区继续下一步。</p>
+              <p className="text-sm text-muted-foreground">创建成功后，会自动跳到对应项目的工作区。</p>
             </div>
           </form>
         </div>

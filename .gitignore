@@ -1,5 +1,6 @@
 .next
 .vercel
+.local-project-store.json
 node_modules
 out
 dist

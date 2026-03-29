@@ -4,6 +4,14 @@ import type { CreateProjectInput } from "@/lib/types/project";
 
 export const dynamic = "force-dynamic";
 
+function toErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unknown error";
+}
+
 export async function GET() {
   try {
     const projects = await listRecentProjects();
@@ -13,9 +21,13 @@ export async function GET() {
       projects,
     });
   } catch (error) {
-    console.error("GET /api/projects failed:", error);
+    console.error("GET /api/projects failed:", {
+      error,
+      message: toErrorMessage(error),
+    });
+
     return NextResponse.json(
-      { success: false, error: "最近项目读取失败，请稍后再试。" },
+      { success: false, error: `最近项目读取失败：${toErrorMessage(error)}` },
       { status: 500 },
     );
   }
@@ -40,9 +52,13 @@ export async function POST(request: Request) {
       project,
     });
   } catch (error) {
-    console.error("POST /api/projects failed:", error);
+    console.error("POST /api/projects failed:", {
+      error,
+      message: toErrorMessage(error),
+    });
+
     return NextResponse.json(
-      { success: false, error: "项目创建失败，请稍后再试。" },
+      { success: false, error: `项目创建失败：${toErrorMessage(error)}` },
       { status: 500 },
     );
   }
