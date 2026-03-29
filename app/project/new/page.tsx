@@ -1,13 +1,15 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
 
-export default function ProjectNewPage() {
+function ProjectNewPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedRoute = searchParams.get("route");
   const [title, setTitle] = useState("");
   const [idea, setIdea] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -69,7 +71,11 @@ export default function ProjectNewPage() {
         <PageBackLinks
           items={[
             { label: "返回首页", href: "/" },
-            { label: "返回上一步", type: "back", fallbackHref: "/" },
+            {
+              label: "返回上一步",
+              type: "back",
+              fallbackHref: selectedRoute ? `/routes/${selectedRoute}/setup` : "/routes",
+            },
             { label: "先去选路线", href: "/routes" },
           ]}
         />
@@ -81,6 +87,12 @@ export default function ProjectNewPage() {
         />
 
         <div className="surface-panel max-w-3xl space-y-5 p-6 md:p-8">
+          {selectedRoute ? (
+            <div className="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm leading-6 text-blue-900">
+              当前你是从路线安装页进入的，建议确认安装和最小练习已经完成，再开始创建项目。
+            </div>
+          ) : null}
+
           <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-4 text-sm leading-6 text-muted-foreground">
             建议至少写清楚三件事：你想帮谁解决问题、核心使用场景是什么、你希望第一版先做到什么程度。
           </div>
@@ -144,5 +156,13 @@ export default function ProjectNewPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function ProjectNewPage() {
+  return (
+    <Suspense fallback={<section className="section-space"><div className="container-shell" /></section>}>
+      <ProjectNewPageContent />
+    </Suspense>
   );
 }

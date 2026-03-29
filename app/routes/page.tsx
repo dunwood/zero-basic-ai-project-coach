@@ -63,7 +63,7 @@ export default function RoutesPage() {
           items={[
             { label: "返回首页", href: "/" },
             { label: "返回上一步", type: "back", fallbackHref: "/" },
-            { label: "直接创建项目", href: "/project/new", variant: "primary" },
+            { label: "我已准备好，跳过安装", href: "/project/new", variant: "primary" },
           ]}
         />
 
@@ -86,7 +86,7 @@ export default function RoutesPage() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            筛选功能即将开放，当前请直接点击路线卡片下方按钮进入下一步。
+            筛选功能即将开放，当前请先选一条路线，再进入安装与起步练习页面。
           </p>
 
           {isLoading ? (
@@ -107,14 +107,14 @@ export default function RoutesPage() {
         <div className="surface-panel space-y-4 p-6">
           <h2 className="text-lg font-semibold text-slate-900">继续下一步</h2>
           <p className="text-sm leading-6 text-muted-foreground">
-            如果你已经大致知道想做什么，也可以直接进入项目创建页，后面再结合路线慢慢调整。
+            正常流程建议先完成路线安装与最小练习；如果你已经装好工具，也可以从这里跳过安装直接进入项目创建。
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/project/new"
               className="inline-flex rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
             >
-              去创建项目
+              跳过安装，直接创建项目
             </Link>
             <Link
               href="/"

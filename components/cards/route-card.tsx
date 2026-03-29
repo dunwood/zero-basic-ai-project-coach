@@ -38,10 +38,10 @@ export function RouteCard({
       </dl>
 
       <Link
-        href={`/project/new?route=${id}`}
+        href={`/routes/${id}/setup`}
         className="mt-auto rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
       >
-        选择这条路线
+        查看安装与起步练习
       </Link>
     </article>
   );

@@ -38,7 +38,7 @@ export function HeroSection() {
                   href="/project/new"
                   className="inline-flex items-center justify-center rounded-full border border-border bg-white px-6 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-400"
                 >
-                  我已准备好，直接创建项目
+                  我已准备好，跳过安装
                 </Link>
               </div>
             </div>

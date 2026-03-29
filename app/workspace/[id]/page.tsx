@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
@@ -54,6 +55,13 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
+        <PageBackLinks
+          items={[
+            { label: "返回首页", href: "/" },
+            { label: "返回上一步", type: "back", fallbackHref: "/project/new" },
+          ]}
+        />
+
         <SectionHeader
           eyebrow="项目工作区"
           title={project.title}
