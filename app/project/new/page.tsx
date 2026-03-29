@@ -119,9 +119,9 @@ function ProjectNewPageContent() {
               ...commonActionLinks.github,
             },
             {
-              title: "去打开 Vercel",
-              description: "如果你准备做上线，这里可以先把 Vercel 控制台打开。",
-              ...commonActionLinks.vercel,
+              title: "去打开 Cloudflare",
+              description: "如果你准备做上线，这里可以先把 Cloudflare 控制台打开。",
+              ...commonActionLinks.cloudflare,
             },
             {
               title: "返回安装页确认",

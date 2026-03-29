@@ -162,9 +162,9 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
               ...commonActionLinks.githubRepoPlaceholder,
             },
             {
-              title: "去打开 Vercel",
-              description: "如果你正在准备上线，可以直接打开 Vercel 控制台。",
-              ...commonActionLinks.vercel,
+              title: "去打开 Cloudflare",
+              description: "如果你正在准备上线，可以直接打开 Cloudflare 控制台。",
+              ...commonActionLinks.cloudflare,
             },
           ]}
         />

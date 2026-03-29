@@ -71,7 +71,7 @@ const baseTools: ToolCard[] = [
   },
   {
     name: "GitHub",
-    purpose: "用来保存代码、同步项目、连接 Vercel 部署。",
+    purpose: "用来保存代码、同步项目、连接 Cloudflare 部署。",
     installOrRegister: "去 GitHub 官网注册或登录账号，后面创建仓库并把项目 push 上去。",
     howToEnter: "在浏览器里打开 GitHub 官网，登录后就能进入你的主页和仓库列表。",
     howToStart: "第一次先完成注册或登录。后面创建仓库后，你会把本地项目推送到 GitHub，再继续接入部署。",

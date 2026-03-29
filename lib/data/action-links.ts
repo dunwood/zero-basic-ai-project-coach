@@ -13,9 +13,9 @@ export const commonActionLinks = {
     external: true,
     helperText: "做完后返回这里继续。",
   },
-  vercel: {
-    label: "去打开 Vercel",
-    href: "https://vercel.com/dashboard",
+  cloudflare: {
+    label: "去打开 Cloudflare",
+    href: "https://dash.cloudflare.com/",
     external: true,
     helperText: "做完后返回这里继续。",
   },

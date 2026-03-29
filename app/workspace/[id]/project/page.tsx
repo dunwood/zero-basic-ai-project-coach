@@ -89,9 +89,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               ...commonActionLinks.github,
             },
             {
-              title: "去打开 Vercel",
-              description: "如果你准备做部署，也可以先把 Vercel 控制台打开。",
-              ...commonActionLinks.vercel,
+              title: "去打开 Cloudflare",
+              description: "如果你准备做部署，也可以先把 Cloudflare 控制台打开。",
+              ...commonActionLinks.cloudflare,
             },
           ]}
         />
