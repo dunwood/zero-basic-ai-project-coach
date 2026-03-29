@@ -1,10 +1,12 @@
 "use client";
 
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { GuidedActionPanel } from "@/components/ui/guided-action-panel";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
+import { commonActionLinks, routeToolActionLinks } from "@/lib/data/action-links";
 
 function ProjectNewPageContent() {
   const router = useRouter();
@@ -14,6 +16,14 @@ function ProjectNewPageContent() {
   const [idea, setIdea] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const routeToolAction = useMemo(
+    () =>
+      selectedRoute
+        ? routeToolActionLinks[selectedRoute] ?? commonActionLinks.aiToolPlaceholder
+        : commonActionLinks.aiToolPlaceholder,
+    [selectedRoute],
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,25 +86,54 @@ function ProjectNewPageContent() {
               type: "back",
               fallbackHref: selectedRoute ? `/routes/${selectedRoute}/setup` : "/routes",
             },
-            { label: "先去选路线", href: "/routes" },
+            { label: "去安装路线", href: "/routes" },
           ]}
         />
 
         <SectionHeader
           eyebrow="项目起步"
-          title="先把你想做的软件想法写下来"
-          description="不用写得很专业。先把你想解决什么问题、想给谁用、想做成什么样子写下来，我们会带你继续往下走。"
+          title="先把你的项目想法写下来"
+          description="这里不只是说明页。你可以一边打开工具，一边回到这里把项目写清楚，再进入工作区继续。"
+        />
+
+        <GuidedActionPanel
+          title="先去操作，再回来继续"
+          description="这一步的重点是把常用工具先打开。做完一项就回来继续，不需要一次完成所有事情。"
+          items={[
+            {
+              title: "去打开当前 AI 工具",
+              description: "如果你已经选了路线，就先把对应工具打开；没有明确入口时先保持占位。",
+              ...routeToolAction,
+            },
+            {
+              title: "去打开 GitHub",
+              description: "后面你很可能会用到仓库，这里先把 GitHub 打开备用。",
+              ...commonActionLinks.github,
+            },
+            {
+              title: "去打开 Vercel",
+              description: "如果你准备做上线，这里可以先把 Vercel 控制台打开。",
+              ...commonActionLinks.vercel,
+            },
+            {
+              title: "返回安装页确认",
+              description: "如果你刚做完安装，这里可以回到安装页再核对一遍。",
+              label: "返回安装页",
+              href: selectedRoute ? `/routes/${selectedRoute}/setup` : "/routes",
+              helperText: "做完后返回这里继续填写项目。",
+            },
+          ]}
         />
 
         <div className="surface-panel max-w-3xl space-y-5 p-6 md:p-8">
           {selectedRoute ? (
             <div className="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm leading-6 text-blue-900">
-              当前你是从路线安装页进入的，建议确认安装和最小练习已经完成，再开始创建项目。
+              你是从安装页进来的。完成安装后，回到这里继续填写项目即可。
             </div>
           ) : null}
 
           <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-4 text-sm leading-6 text-muted-foreground">
-            建议至少写清楚三件事：你想帮谁解决问题、核心使用场景是什么、你希望第一版先做到什么程度。
+            先写清楚三件事：你想帮谁解决问题、第一版想做什么、你希望先做到哪一步。
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -120,13 +159,13 @@ function ProjectNewPageContent() {
                 id="idea"
                 value={idea}
                 onChange={(event) => setIdea(event.target.value)}
-                placeholder="例如：我想做一个帮助求职者梳理经历、生成简历初稿的工具。"
+                placeholder="例如：我想做一个帮求职者整理经历、生成简历初稿的小工具。"
                 maxLength={2000}
                 rows={8}
                 className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-slate-400"
               />
               <p className="text-xs text-muted-foreground">
-                先写清楚你想解决的问题、目标用户，以及你希望它大致怎么工作。
+                写清楚你想解决的问题、目标用户，以及第一版先做什么就够了。
               </p>
             </div>
 
@@ -142,15 +181,15 @@ function ProjectNewPageContent() {
                 disabled={isSubmitting}
                 className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                {isSubmitting ? "正在创建项目..." : "创建项目并进入工作区"}
+                {isSubmitting ? "正在创建项目..." : "去创建项目并进入工作区"}
               </button>
               <Link
-                href="/"
+                href="/routes"
                 className="inline-flex rounded-full border border-border px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
               >
-                返回首页
+                返回上一步
               </Link>
-              <p className="text-sm text-muted-foreground">创建成功后会自动跳转到对应工作区。</p>
+              <p className="text-sm text-muted-foreground">创建成功后，回到工作区继续下一步。</p>
             </div>
           </form>
         </div>

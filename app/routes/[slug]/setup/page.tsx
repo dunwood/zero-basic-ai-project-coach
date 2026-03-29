@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
 import { SetupCommandPanel } from "@/components/ui/setup-command-panel";
+import { routeToolActionLinks } from "@/lib/data/action-links";
 import { routeCatalog } from "@/lib/data/routes";
 
 type RouteSetupPageProps = {
@@ -119,21 +120,6 @@ const staticResourceLinks: Record<string, SetupResourceLink> = {
   },
 };
 
-const aiToolResourceLinks: Partial<Record<string, SetupResourceLink>> = {
-  "chatgpt-codex-cli": {
-    label: "打开 Codex 文档",
-    href: "https://platform.openai.com/docs/codex",
-  },
-  "claude-claude-code": {
-    label: "打开 Claude Code 官网",
-    href: "https://docs.anthropic.com/en/docs/claude-code/overview",
-  },
-  "gemini-gemini-cli": {
-    label: "打开 Gemini CLI 官网",
-    href: "https://github.com/google-gemini/gemini-cli",
-  },
-};
-
 function getSetupSteps(slug: string, toolName: string): SetupStep[] {
   const guide = toolSetupGuide[slug];
 
@@ -154,7 +140,16 @@ function getSetupSteps(slug: string, toolName: string): SetupStep[] {
 
 function getResourceLink(stepId: string, slug: string): SetupResourceLink {
   if (stepId === "tool-step") {
-    return aiToolResourceLinks[slug] ?? {
+    const toolAction = routeToolActionLinks[slug];
+
+    if (toolAction?.href) {
+      return {
+        label: toolAction.label,
+        href: toolAction.href,
+      };
+    }
+
+    return {
       label: "查看推荐工具",
       href: "/routes",
     };
@@ -304,6 +299,7 @@ export default async function RouteSetupPage({ params }: RouteSetupPageProps) {
                       >
                         {resourceLink.label}
                       </a>
+                      <p className="mt-3 text-sm text-muted-foreground">完成这一项后，回到本页继续下一步。</p>
                     </section>
                   );
                 })}
