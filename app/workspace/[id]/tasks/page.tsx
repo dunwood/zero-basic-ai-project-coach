@@ -1,6 +1,7 @@
 import { TaskBoard } from "@/components/workspace/task-board";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
+import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { buildProjectStages } from "@/lib/project-stage";
@@ -66,6 +67,14 @@ export default async function TasksPage({ params }: TasksPageProps) {
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
+        <PageBackLinks
+          items={[
+            { label: "返回首页", href: "/" },
+            { label: "返回工作区", href: `/workspace/${project.id}` },
+            { label: "返回上一步", type: "back", fallbackHref: `/workspace/${project.id}/review` },
+          ]}
+        />
+
         <SectionHeader
           eyebrow="任务执行台"
           title="项目任务执行台"

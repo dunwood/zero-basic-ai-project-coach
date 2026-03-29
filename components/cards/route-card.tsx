@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { RouteCardData } from "@/lib/types/route";
 
 export function RouteCard({
@@ -36,12 +37,12 @@ export function RouteCard({
         </div>
       </dl>
 
-      <button
-        type="button"
+      <Link
+        href={`/project/new?route=${id}`}
         className="mt-auto rounded-full bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
       >
         选择这条路线
-      </button>
+      </Link>
     </article>
   );
 }

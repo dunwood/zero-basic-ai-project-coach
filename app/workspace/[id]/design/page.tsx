@@ -1,5 +1,6 @@
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
+import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { buildDesignBrief } from "@/lib/server/design-brief";
@@ -80,6 +81,14 @@ export default async function DesignPage({ params }: DesignPageProps) {
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
+        <PageBackLinks
+          items={[
+            { label: "返回首页", href: "/" },
+            { label: "返回工作区", href: `/workspace/${project.id}` },
+            { label: "返回上一步", type: "back", fallbackHref: `/workspace/${project.id}/clarify` },
+          ]}
+        />
+
         <SectionHeader
           eyebrow="设计书预览"
           title="项目设计书预览"

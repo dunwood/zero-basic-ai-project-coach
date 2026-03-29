@@ -1,6 +1,7 @@
 import { ClarifyForm } from "@/components/workspace/clarify-form";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
+import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
 import { clarifyQuestions } from "@/lib/constants/clarify-questions";
@@ -40,6 +41,14 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
+        <PageBackLinks
+          items={[
+            { label: "返回首页", href: "/" },
+            { label: "返回工作区", href: `/workspace/${project.id}` },
+            { label: "返回上一步", type: "back", fallbackHref: `/workspace/${project.id}/project` },
+          ]}
+        />
+
         <SectionHeader
           eyebrow="需求澄清"
           title="先把需求澄清，再开始做"

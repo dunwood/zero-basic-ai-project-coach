@@ -11,7 +11,7 @@ export function HeroSection() {
                 面向零基础用户的 AI 项目起步工具
               </span>
               <div className="space-y-4">
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-900 md:text-6xl">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 md:text-5xl">
                   零基础做 AI 项目，先别急着开工，先把路线和工具选对
                 </h1>
                 <p className="max-w-xl text-base leading-8 text-muted-foreground md:text-lg">

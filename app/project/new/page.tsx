@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
 
 export default function ProjectNewPage() {
@@ -65,6 +66,14 @@ export default function ProjectNewPage() {
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
+        <PageBackLinks
+          items={[
+            { label: "返回首页", href: "/" },
+            { label: "返回上一步", type: "back", fallbackHref: "/" },
+            { label: "先去选路线", href: "/routes" },
+          ]}
+        />
+
         <SectionHeader
           eyebrow="项目起步"
           title="先把你想做的软件想法写下来"
