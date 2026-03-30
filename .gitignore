@@ -1,5 +1,7 @@
 .next
+.open-next
 .vercel
+.wrangler
 .local-project-store.json
 node_modules
 out
