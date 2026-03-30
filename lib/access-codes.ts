@@ -5,6 +5,8 @@ export const ACCESS_CODES = [
 ] as const;
 
 export const ACCESS_ACTIVATION_STORAGE_KEY = "zero-basic-ai-project-coach-access";
+export const ACCESS_ACTIVATION_COOKIE_KEY = "zero_basic_ai_project_coach_access";
+export const ACCESS_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 export type AccessCode = (typeof ACCESS_CODES)[number];
 

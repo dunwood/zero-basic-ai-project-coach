@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
+  ACCESS_ACTIVATION_COOKIE_KEY,
   ACCESS_ACTIVATION_STORAGE_KEY,
+  ACCESS_COOKIE_MAX_AGE_SECONDS,
   isValidAccessCode,
   normalizeAccessCode,
 } from "@/lib/access-codes";
@@ -41,13 +44,17 @@ function readStoredActivation() {
   }
 }
 
-export function UnlockForm() {
+function persistActivationCookie(code: string) {
+  document.cookie = `${ACCESS_ACTIVATION_COOKIE_KEY}=${encodeURIComponent(code)}; Path=/; Max-Age=${ACCESS_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+}
+
+export function UnlockForm({ nextPath = "/routes" }: { nextPath?: string }) {
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [message, setMessage] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activatedCode, setActivatedCode] = useState("");
   const [activatedAt, setActivatedAt] = useState("");
-
   useEffect(() => {
     const saved = readStoredActivation();
 
@@ -56,12 +63,17 @@ export function UnlockForm() {
     }
 
     queueMicrotask(() => {
+      persistActivationCookie(saved.code);
       setIsUnlocked(true);
       setActivatedCode(saved.code);
       setActivatedAt(saved.activatedAt);
       setMessage("本机已激活，刷新后状态仍会保留。");
+
+      if (nextPath !== "/routes") {
+        router.replace(nextPath);
+      }
     });
-  }, []);
+  }, [nextPath, router]);
 
   const activatedTimeText = useMemo(() => {
     if (!activatedAt) {
@@ -95,16 +107,16 @@ export function UnlockForm() {
       activatedAt: new Date().toISOString(),
     };
 
-    window.localStorage.setItem(
-      ACCESS_ACTIVATION_STORAGE_KEY,
-      JSON.stringify(nextActivation),
-    );
+    window.localStorage.setItem(ACCESS_ACTIVATION_STORAGE_KEY, JSON.stringify(nextActivation));
+    persistActivationCookie(nextActivation.code);
 
     setIsUnlocked(true);
     setActivatedCode(nextActivation.code);
     setActivatedAt(nextActivation.activatedAt);
-    setMessage("访问已解锁，刷新后仍然有效。");
+    setMessage("访问已解锁，正在进入下一步。");
     setInput("");
+
+    router.replace(nextPath);
   }
 
   return (
@@ -112,7 +124,7 @@ export function UnlockForm() {
       <div className="space-y-2">
         <h2 className="text-2xl font-semibold text-slate-900">输入访问码</h2>
         <p className="text-sm leading-6 text-muted-foreground">
-          输入有效访问码后，会把本机激活状态保存在浏览器本地。刷新页面后，激活状态仍会保留。
+          输入有效访问码后，会把激活状态保存在当前浏览器本地，并同步写入访问 cookie。这样刷新页面后状态仍会保留，核心页面也能正常放行。
         </p>
       </div>
 

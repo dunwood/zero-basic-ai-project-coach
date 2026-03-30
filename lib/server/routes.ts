@@ -1,15 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { routeCatalog } from "@/lib/data/routes";
 import type { RouteCardData, RouteDetailData, RouteStepData } from "@/lib/types/route";
 
-function toRouteCardData(route: {
-  id: string;
-  name: string;
-  shortDescription: string;
-  targetUsers: string;
-  usageCondition: string;
-  installDifficulty: string;
-  recommendationTag: string;
-}): RouteCardData {
+function toRouteCardData(route: (typeof routeCatalog)[number]): RouteCardData {
   return {
     id: route.id,
     name: route.name,
@@ -21,14 +13,7 @@ function toRouteCardData(route: {
   };
 }
 
-function toRouteStepData(step: {
-  id: string;
-  stepOrder: number;
-  title: string;
-  content: string;
-  successHint: string | null;
-  troubleshootingHint: string | null;
-}): RouteStepData {
+function toRouteStepData(step: (typeof routeCatalog)[number]["steps"][number]): RouteStepData {
   return {
     id: step.id,
     stepOrder: step.stepOrder,
@@ -40,51 +25,13 @@ function toRouteStepData(step: {
 }
 
 export async function getRoutes(): Promise<RouteCardData[]> {
-  const routes = await prisma.route.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-    select: {
-      id: true,
-      name: true,
-      shortDescription: true,
-      targetUsers: true,
-      usageCondition: true,
-      installDifficulty: true,
-      recommendationTag: true,
-    },
-  });
-
-  return routes.map(toRouteCardData);
+  return [...routeCatalog]
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+    .map(toRouteCardData);
 }
 
 export async function getRouteById(id: string): Promise<RouteDetailData | null> {
-  const route = await prisma.route.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      modelName: true,
-      toolName: true,
-      shortDescription: true,
-      targetUsers: true,
-      usageCondition: true,
-      installDifficulty: true,
-      recommendationTag: true,
-      sortOrder: true,
-      isActive: true,
-      steps: {
-        orderBy: { stepOrder: "asc" },
-        select: {
-          id: true,
-          stepOrder: true,
-          title: true,
-          content: true,
-          successHint: true,
-          troubleshootingHint: true,
-        },
-      },
-    },
-  });
+  const route = routeCatalog.find((item) => item.id === id);
 
   if (!route) {
     return null;
@@ -95,7 +42,7 @@ export async function getRouteById(id: string): Promise<RouteDetailData | null> 
     modelName: route.modelName,
     toolName: route.toolName,
     sortOrder: route.sortOrder,
-    isActive: route.isActive,
+    isActive: true,
     steps: route.steps.map(toRouteStepData),
   };
 }

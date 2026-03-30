@@ -3,7 +3,16 @@ import { UnlockForm } from "@/components/access/unlock-form";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
 
-export default function UnlockPage() {
+type UnlockPageProps = {
+  searchParams: Promise<{
+    next?: string;
+  }>;
+};
+
+export default async function UnlockPage({ searchParams }: UnlockPageProps) {
+  const params = await searchParams;
+  const nextPath = params.next || "/routes";
+
   return (
     <section className="section-space">
       <div className="container-shell space-y-8">
@@ -17,10 +26,10 @@ export default function UnlockPage() {
         <SectionHeader
           eyebrow="访问解锁"
           title="先输入访问码，再继续使用"
-          description="这里只做本地激活校验。输入正确访问码后，会把激活状态保存在当前浏览器里。"
+          description="这里做的是本地激活校验。输入正确访问码后，会把激活状态保存到当前浏览器，并放行核心页面。"
         />
 
-        <UnlockForm />
+        <UnlockForm nextPath={nextPath} />
 
         <div className="surface-panel flex flex-wrap items-center justify-between gap-4 p-6">
           <div>
