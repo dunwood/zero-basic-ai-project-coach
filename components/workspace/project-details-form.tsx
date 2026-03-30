@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { updateBrowserProjectDetails } from "@/lib/client/project-store";
 
 type ProjectDetailsFormProps = {
   projectId: string;
@@ -14,14 +14,13 @@ export function ProjectDetailsForm({
   initialTitle,
   initialIdea,
 }: ProjectDetailsFormProps) {
-  const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
   const [idea, setIdea] = useState(initialIdea);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const nextTitle = title.trim();
@@ -44,33 +43,20 @@ export function ProjectDetailsForm({
       setErrorMessage("");
       setSuccessMessage("");
 
-      const response = await fetch(`/api/projects/${projectId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: nextTitle,
-          idea: nextIdea,
-        }),
+      const project = updateBrowserProjectDetails(projectId, {
+        title: nextTitle,
+        idea: nextIdea,
       });
 
-      const data = (await response.json()) as {
-        success: boolean;
-        error?: string;
-      };
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error ?? "项目更新失败，请稍后再试。");
+      if (!project) {
+        throw new Error("没有找到这个项目，暂时无法保存。");
       }
 
-      setTitle(nextTitle);
-      setIdea(nextIdea);
+      setTitle(project.title);
+      setIdea(project.idea);
       setSuccessMessage("项目信息已更新。");
-      router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "项目更新失败，请稍后再试。";
-      setErrorMessage(message);
+      setErrorMessage(error instanceof Error ? error.message : "项目更新失败，请稍后再试。");
       setSuccessMessage("");
     } finally {
       setIsSubmitting(false);
@@ -104,9 +90,7 @@ export function ProjectDetailsForm({
           rows={8}
           className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-slate-400"
         />
-        <p className="text-xs text-muted-foreground">
-          这里保持轻量编辑，只更新项目标题和项目想法。
-        </p>
+        <p className="text-xs text-muted-foreground">这里保持轻量编辑，只更新项目标题和项目想法。</p>
       </div>
 
       {errorMessage ? (
@@ -129,7 +113,7 @@ export function ProjectDetailsForm({
         >
           {isSubmitting ? "正在保存..." : "保存项目信息"}
         </button>
-        <p className="text-sm text-muted-foreground">保存后会留在当前页，并刷新展示结果。</p>
+        <p className="text-sm text-muted-foreground">保存后会留在当前页，你可以继续下一步。</p>
       </div>
     </form>
   );

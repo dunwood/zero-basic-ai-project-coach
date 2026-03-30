@@ -1,22 +1,36 @@
+"use client";
+
+import { useMemo } from "react";
+import { useParams } from "next/navigation";
 import { ClarifyForm } from "@/components/workspace/clarify-form";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
+import { useBrowserProject } from "@/components/workspace/use-browser-project";
 import { clarifyQuestions } from "@/lib/constants/clarify-questions";
-import { getProjectById } from "@/lib/server/projects";
 import { buildProjectStages } from "@/lib/project-stage";
 
-type ClarifyPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+export default function ClarifyPage() {
+  const params = useParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { project, isLoaded } = useBrowserProject(id);
 
-export default async function ClarifyPage({ params }: ClarifyPageProps) {
-  const { id } = await params;
-  const project = await getProjectById(id);
+  const initialAnswers = useMemo(() => {
+    if (!project) {
+      return {};
+    }
+
+    return clarifyQuestions.reduce<Record<string, string>>((accumulator, question) => {
+      accumulator[question.key] = project.clarification?.answers?.[question.key] ?? "";
+      return accumulator;
+    }, {});
+  }, [project]);
+
+  if (!isLoaded) {
+    return <section className="section-space"><div className="container-shell" /></section>;
+  }
 
   if (!project) {
     return (
@@ -32,10 +46,6 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
     );
   }
 
-  const initialAnswers = clarifyQuestions.reduce<Record<string, string>>((accumulator, question) => {
-    accumulator[question.key] = project.clarification?.answers?.[question.key] ?? "";
-    return accumulator;
-  }, {});
   const stages = buildProjectStages(project);
 
   return (
@@ -77,7 +87,7 @@ export default async function ClarifyPage({ params }: ClarifyPageProps) {
 
           <WorkspaceQuickLinks
             title="继续推进"
-            description="当前版本会保存你的澄清回答，但还不会接入真实 AI。完成这一步后，就可以继续查看设计书预览。"
+            description="当前版本会保留你的澄清回答，但还不会接入真实 AI。完成这一步后，就可以继续查看设计书预览。"
             links={[
               { href: `/workspace/${project.id}`, label: "返回工作区" },
               { href: `/workspace/${project.id}/project`, label: "查看项目详情" },

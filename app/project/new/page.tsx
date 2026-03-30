@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { GuidedActionPanel } from "@/components/ui/guided-action-panel";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
+import { createBrowserProject } from "@/lib/client/project-store";
 import { commonActionLinks, routeToolActionLinks } from "@/lib/data/action-links";
 
 function ProjectNewPageContent() {
@@ -45,39 +46,15 @@ function ProjectNewPageContent() {
       setIsSubmitting(true);
       setErrorMessage("");
 
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: nextTitle,
-          idea: nextIdea,
-        }),
+      const project = createBrowserProject({
+        title: nextTitle,
+        idea: nextIdea,
       });
 
-      const data = (await response.json()) as {
-        success: boolean;
-        error?: string;
-        project?: { id: string };
-      };
-
-      if (!response.ok || !data.success || !data.project?.id) {
-        console.error("Project creation failed on client:", {
-          status: response.status,
-          data,
-          title: nextTitle,
-          hasIdea: Boolean(nextIdea),
-        });
-
-        throw new Error(data.error ?? "项目创建失败，请稍后再试。");
-      }
-
-      router.push(`/workspace/${data.project.id}`);
+      router.push(`/workspace/${project.id}`);
     } catch (error) {
       console.error("Project creation submit crashed:", error);
-      const message = error instanceof Error ? error.message : "项目创建失败，请稍后再试。";
-      setErrorMessage(message);
+      setErrorMessage(error instanceof Error ? error.message : "项目创建失败，请稍后再试。");
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +78,7 @@ function ProjectNewPageContent() {
         <SectionHeader
           eyebrow="项目起步"
           title="先把你的项目想法写下来"
-          description="这里不只是说明页。你可以一边打开工具，一边回到这里把项目写清楚，再进入工作区继续。"
+          description="这里不是只看说明。你可以一边打开工具，一边回到这里把项目写清楚，再进入工作区继续。"
         />
 
         <GuidedActionPanel
@@ -110,7 +87,7 @@ function ProjectNewPageContent() {
           items={[
             {
               title: "去打开当前 AI 工具",
-              description: "如果你已经选了路线，就先把对应工具打开；没有明确入口时先保持占位。",
+              description: "如果你已经选了路线，就先把对应工具打开。没有明确入口时先保持占位。",
               ...routeToolAction,
             },
             {

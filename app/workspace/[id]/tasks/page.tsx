@@ -1,22 +1,24 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { TaskBoard } from "@/components/workspace/task-board";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
+import { useBrowserProject } from "@/components/workspace/use-browser-project";
 import { buildProjectStages } from "@/lib/project-stage";
 import { buildTaskExecutionState } from "@/lib/server/task-plan";
-import { ensureProjectTasks } from "@/lib/server/projects";
 
-type TasksPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+export default function TasksPage() {
+  const params = useParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { project, isLoaded } = useBrowserProject(id, "ensureTasks");
 
-export default async function TasksPage({ params }: TasksPageProps) {
-  const { id } = await params;
-  const project = await ensureProjectTasks(id);
+  if (!isLoaded) {
+    return <section className="section-space"><div className="container-shell" /></section>;
+  }
 
   if (!project) {
     return (
@@ -37,7 +39,7 @@ export default async function TasksPage({ params }: TasksPageProps) {
       <WorkspaceEmptyState
         eyebrow="任务执行台"
         title="你还没有完成需求澄清"
-        description="完成需求澄清后，系统才能基于当前设计书预览整理出第一版任务清单。"
+        description="完成需求澄清后，系统才会基于当前设计书预览整理出第一版任务清单。"
         note="先去完成澄清问题填写，再回来进入任务执行台。"
         actions={[
           { href: `/workspace/${project.id}/clarify`, label: "去完成需求澄清" },
@@ -55,7 +57,7 @@ export default async function TasksPage({ params }: TasksPageProps) {
       <WorkspaceEmptyState
         eyebrow="任务执行台"
         title="任务清单暂时还是空的"
-        description="设计书数据已经准备好，但任务清单还没有成功写入数据库，请稍后刷新再试。"
+        description="设计书数据已经准备好，但任务清单还没有成功整理出来，请稍后刷新再试。"
         actions={[
           { href: `/workspace/${project.id}/review`, label: "返回设计书确认" },
           { href: `/workspace/${project.id}`, label: "返回工作区", variant: "secondary" },

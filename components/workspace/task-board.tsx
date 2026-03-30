@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { updateBrowserProjectTask } from "@/lib/client/project-store";
 import type {
   ProjectTaskExecutionState,
   ProjectTaskPhaseGroup,
@@ -75,7 +76,7 @@ export function TaskBoard({ projectId, initialTasks, initialExecutionState }: Ta
     return buildExecutionStateFromClient(tasks, phaseGroups);
   }, [initialExecutionState.phaseGroups, tasks]);
 
-  async function handleToggle(taskId: string, nextIsDone: boolean) {
+  function handleToggle(taskId: string, nextIsDone: boolean) {
     setError("");
     setPendingTaskId(taskId);
 
@@ -85,20 +86,10 @@ export function TaskBoard({ projectId, initialTasks, initialExecutionState }: Ta
     );
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isDone: nextIsDone }),
-      });
+      const task = updateBrowserProjectTask(projectId, taskId, nextIsDone);
 
-      const result = (await response.json()) as
-        | { success: true; task: { id: string; isDone: boolean } }
-        | { success: false; error: string };
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.success ? "任务更新失败。" : result.error);
+      if (!task) {
+        throw new Error("任务更新失败，请稍后再试。");
       }
     } catch (caughtError) {
       setTasks(previousTasks);
@@ -115,9 +106,7 @@ export function TaskBoard({ projectId, initialTasks, initialExecutionState }: Ta
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">总进度</p>
             <h2 className="text-2xl font-semibold text-slate-900">{executionState.statusTitle}</h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {executionState.statusDescription}
-            </p>
+            <p className="text-sm leading-6 text-muted-foreground">{executionState.statusDescription}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">

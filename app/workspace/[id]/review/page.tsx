@@ -1,17 +1,14 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
-import { buildDesignBrief } from "@/lib/server/design-brief";
-import { getProjectById } from "@/lib/server/projects";
+import { useBrowserProject } from "@/components/workspace/use-browser-project";
 import { buildProjectStages } from "@/lib/project-stage";
-
-type ReviewPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+import { buildDesignBrief } from "@/lib/server/design-brief";
 
 function SummarySection({
   title,
@@ -28,9 +25,14 @@ function SummarySection({
   );
 }
 
-export default async function ReviewPage({ params }: ReviewPageProps) {
-  const { id } = await params;
-  const project = await getProjectById(id);
+export default function ReviewPage() {
+  const params = useParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { project, isLoaded } = useBrowserProject(id);
+
+  if (!isLoaded) {
+    return <section className="section-space"><div className="container-shell" /></section>;
+  }
 
   if (!project) {
     return (

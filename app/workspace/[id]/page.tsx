@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { GuidedActionPanel } from "@/components/ui/guided-action-panel";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -6,17 +9,11 @@ import { CurrentTaskActionPanel } from "@/components/workspace/current-task-acti
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
+import { useBrowserProject } from "@/components/workspace/use-browser-project";
 import { commonActionLinks } from "@/lib/data/action-links";
 import { deploymentChecklist } from "@/lib/data/deployment-checklist";
 import { getProjectOverview } from "@/lib/project-stage";
-import { ensureProjectTasks, getProjectById } from "@/lib/server/projects";
 import { buildTaskExecutionState } from "@/lib/server/task-plan";
-
-type WorkspaceDetailPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
 
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -28,11 +25,16 @@ function formatDate(dateString: string) {
   }).format(new Date(dateString));
 }
 
-export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPageProps) {
-  const { id } = await params;
-  const baseProject = await getProjectById(id);
+export default function WorkspaceDetailPage() {
+  const params = useParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { project, isLoaded } = useBrowserProject(id, "ensureTasks");
 
-  if (!baseProject) {
+  if (!isLoaded) {
+    return <section className="section-space"><div className="container-shell" /></section>;
+  }
+
+  if (!project) {
     return (
       <WorkspaceEmptyState
         eyebrow="项目工作区"
@@ -46,11 +48,6 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       />
     );
   }
-
-  const project =
-    baseProject.status === "clarified" && baseProject.clarification
-      ? ((await ensureProjectTasks(id)) ?? baseProject)
-      : baseProject;
 
   const overview = getProjectOverview(project);
   const executionState = buildTaskExecutionState(project);

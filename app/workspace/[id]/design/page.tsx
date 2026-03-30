@@ -1,17 +1,14 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
 import { SectionHeader } from "@/components/ui/section-header";
-import { buildDesignBrief } from "@/lib/server/design-brief";
-import { getProjectById } from "@/lib/server/projects";
+import { useBrowserProject } from "@/components/workspace/use-browser-project";
 import { buildProjectStages } from "@/lib/project-stage";
-
-type DesignPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+import { buildDesignBrief } from "@/lib/server/design-brief";
 
 function DetailSection({
   title,
@@ -28,9 +25,14 @@ function DetailSection({
   );
 }
 
-export default async function DesignPage({ params }: DesignPageProps) {
-  const { id } = await params;
-  const project = await getProjectById(id);
+export default function DesignPage() {
+  const params = useParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { project, isLoaded } = useBrowserProject(id);
+
+  if (!isLoaded) {
+    return <section className="section-space"><div className="container-shell" /></section>;
+  }
 
   if (!project) {
     return (
@@ -51,7 +53,7 @@ export default async function DesignPage({ params }: DesignPageProps) {
       <WorkspaceEmptyState
         eyebrow="设计书预览"
         title="你还没有完成需求澄清"
-        description="完成需求澄清后，系统才能基于你的回答整理出一份设计书预览。"
+        description="完成需求澄清后，系统才会基于你的回答整理出一份设计书预览。"
         note="先去补完澄清问题，再回来查看这一版设计书摘要。"
         actions={[
           { href: `/workspace/${project.id}/clarify`, label: "去完成需求澄清" },

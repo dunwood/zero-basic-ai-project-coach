@@ -1,31 +1,41 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { ProjectCard } from "@/components/cards/project-card";
 import { StatusCard } from "@/components/cards/status-card";
 import { FAQSection } from "@/components/sections/faq-section";
-import { SectionHeader } from "@/components/ui/section-header";
 import { DisclaimerDialog } from "@/components/legal/disclaimer-dialog";
+import { SectionHeader } from "@/components/ui/section-header";
+import { listBrowserRecentProjects } from "@/lib/client/project-store";
 import { deploymentChecklist } from "@/lib/data/deployment-checklist";
 import { statusOptions } from "@/lib/data/status-options";
-import { listRecentProjects } from "@/lib/server/projects";
 import type { RecentProjectSummary } from "@/lib/types/project";
 
 const outcomes = [
-  "路线选择：知道哪种模型 + 工具组合更适合你。",
+  "路线选择：知道哪种模型和工具组合更适合你。",
   "安装引导：知道下一步该装什么、怎么开始。",
   "项目设计书：把模糊想法整理成清晰方案。",
   "执行拆解：形成可以直接照着做的任务列表。",
 ];
 
-export async function HomePageContent() {
-  let projectsError = "";
-  let recentProjects: RecentProjectSummary[] = [];
-
-  try {
-    recentProjects = await listRecentProjects();
-  } catch (error) {
-    console.error("Home recent projects load failed:", error);
-    projectsError = "最近项目暂时读取失败，你可以先直接创建一个新项目继续推进。";
-  }
+export function HomePageContent() {
+  const initialState = (() => {
+    try {
+      return {
+        projectsError: "",
+        recentProjects: listBrowserRecentProjects(),
+      };
+    } catch (error) {
+      console.error("Home recent projects load failed:", error);
+      return {
+        projectsError: "最近项目暂时读取失败，你可以先直接创建一个新项目继续推进。",
+        recentProjects: [] as RecentProjectSummary[],
+      };
+    }
+  })();
+  const [projectsError] = useState(initialState.projectsError);
+  const [recentProjects] = useState<RecentProjectSummary[]>(initialState.recentProjects);
 
   return (
     <>
@@ -42,7 +52,7 @@ export async function HomePageContent() {
                     零基础做 AI 项目，先把路线和工具选对
                   </h1>
                   <p className="max-w-xl text-base leading-8 text-muted-foreground md:text-lg">
-                    这不是一堆抽象说明，而是一条能继续走下去的主流程。先看路线，再装工具，然后进入项目想法、设计书和任务执行。
+                    这里不是一堆抽象说明，而是一条能继续走下去的主流程。先看路线，再装工具，然后进入项目想法、设计书和任务执行。
                   </p>
                 </div>
 
@@ -50,7 +60,7 @@ export async function HomePageContent() {
                   <p className="text-sm leading-7 text-slate-700">
                     如果你是零基础用户，建议先从
                     <span className="font-semibold text-slate-900"> 路线 / 工具选择 </span>
-                    开始；只有在你已经确定工具环境时，再直接进入项目创建。
+                    开始。只有在你已经确定工具环境时，再直接进入项目创建。
                   </p>
                 </div>
 
@@ -130,7 +140,7 @@ export async function HomePageContent() {
           <SectionHeader
             eyebrow="最近项目"
             title="如果你已经在推进项目，可以从这里继续"
-            description="最近项目会保留在首页，方便你快速回到工作区继续。"
+            description="最近项目会保留在当前浏览器本地，方便你快速回到工作区继续。"
           />
 
           {projectsError ? (
@@ -162,7 +172,7 @@ export async function HomePageContent() {
             <div className="surface-panel space-y-4 p-6">
               <h3 className="text-lg font-semibold text-slate-900">你还没有最近项目</h3>
               <p className="text-sm leading-6 text-muted-foreground">
-                如果你是第一次来，建议先去看路线和工具；如果你已经准备好，也可以直接创建项目。
+                如果你是第一次来，建议先去看路线和工具。如果你已经准备好，也可以直接创建项目。
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link

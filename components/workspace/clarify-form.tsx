@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clarifyQuestions } from "@/lib/constants/clarify-questions";
+import { saveBrowserProjectClarification } from "@/lib/client/project-store";
 import type { ClarificationAnswers } from "@/lib/types/project";
 
 type ClarifyFormProps = {
@@ -23,7 +24,7 @@ export function ClarifyForm({ projectId, initialAnswers }: ClarifyFormProps) {
     }));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     for (const question of clarifyQuestions) {
@@ -37,28 +38,15 @@ export function ClarifyForm({ projectId, initialAnswers }: ClarifyFormProps) {
       setIsSubmitting(true);
       setErrorMessage("");
 
-      const response = await fetch(`/api/projects/${projectId}/clarify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ answers }),
-      });
+      const project = saveBrowserProjectClarification(projectId, answers);
 
-      const data = (await response.json()) as {
-        success: boolean;
-        error?: string;
-      };
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error ?? "澄清回答保存失败，请稍后再试。");
+      if (!project) {
+        throw new Error("没有找到这个项目，暂时无法保存。");
       }
 
       router.push(`/workspace/${projectId}`);
-      router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "澄清回答保存失败，请稍后再试。";
-      setErrorMessage(message);
+      setErrorMessage(error instanceof Error ? error.message : "澄清回答保存失败，请稍后再试。");
     } finally {
       setIsSubmitting(false);
     }

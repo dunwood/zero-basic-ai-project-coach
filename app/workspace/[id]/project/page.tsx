@@ -1,3 +1,6 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { GuidedActionPanel } from "@/components/ui/guided-action-panel";
 import { PageBackLinks } from "@/components/ui/page-back-links";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -5,15 +8,9 @@ import { ProjectDetailsForm } from "@/components/workspace/project-details-form"
 import { WorkspaceEmptyState } from "@/components/workspace/workspace-empty-state";
 import { WorkspaceQuickLinks } from "@/components/workspace/workspace-quick-links";
 import { WorkspaceStepNav } from "@/components/workspace/workspace-step-nav";
+import { useBrowserProject } from "@/components/workspace/use-browser-project";
 import { commonActionLinks } from "@/lib/data/action-links";
 import { buildProjectStages } from "@/lib/project-stage";
-import { getProjectById } from "@/lib/server/projects";
-
-type ProjectDetailPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
 
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -25,9 +22,14 @@ function formatDate(dateString: string) {
   }).format(new Date(dateString));
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const { id } = await params;
-  const project = await getProjectById(id);
+export default function ProjectDetailPage() {
+  const params = useParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { project, isLoaded } = useBrowserProject(id);
+
+  if (!isLoaded) {
+    return <section className="section-space"><div className="container-shell" /></section>;
+  }
 
   if (!project) {
     return (
