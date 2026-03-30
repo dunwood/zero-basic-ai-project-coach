@@ -48,7 +48,13 @@ function persistActivationCookie(code: string) {
   document.cookie = `${ACCESS_ACTIVATION_COOKIE_KEY}=${encodeURIComponent(code)}; Path=/; Max-Age=${ACCESS_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
 }
 
-export function UnlockForm({ nextPath = "/routes" }: { nextPath?: string }) {
+export function UnlockForm({
+  nextPath = "/routes",
+  submitLabel = "验证访问码",
+}: {
+  nextPath?: string;
+  submitLabel?: string;
+}) {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [message, setMessage] = useState("");
@@ -69,7 +75,7 @@ export function UnlockForm({ nextPath = "/routes" }: { nextPath?: string }) {
       setActivatedAt(saved.activatedAt);
       setMessage("本机已激活，刷新后状态仍会保留。");
 
-      if (nextPath !== "/routes") {
+      if (nextPath && nextPath !== "/") {
         router.replace(nextPath);
       }
     });
@@ -116,7 +122,12 @@ export function UnlockForm({ nextPath = "/routes" }: { nextPath?: string }) {
     setMessage("访问已解锁，正在进入下一步。");
     setInput("");
 
-    router.replace(nextPath);
+    if (nextPath && nextPath !== "/") {
+      router.replace(nextPath);
+      return;
+    }
+
+    router.refresh();
   }
 
   return (
@@ -148,7 +159,7 @@ export function UnlockForm({ nextPath = "/routes" }: { nextPath?: string }) {
             type="submit"
             className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
           >
-            验证访问码
+            {submitLabel}
           </button>
           <p className={`text-sm ${isUnlocked ? "text-green-700" : "text-red-600"}`}>
             {message || "输入正确的访问码后即可通过。"}

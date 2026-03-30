@@ -29,9 +29,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.json({ success: false, error: "请先输入访问码。" }, { status: 401 });
   }
 
-  const unlockUrl = new URL("/unlock", request.url);
-  unlockUrl.searchParams.set("next", `${pathname}${search}`);
-  return NextResponse.redirect(unlockUrl);
+  const homeUrl = new URL("/", request.url);
+  homeUrl.searchParams.set("next", `${pathname}${search}`);
+  return NextResponse.redirect(homeUrl);
 }
 
 export const config = {
