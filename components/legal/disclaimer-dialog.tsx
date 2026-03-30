@@ -115,7 +115,14 @@ export function DisclaimerDialog({
                   </p>
                 </section>
                 <p className="border-t border-border pt-4 text-sm font-medium text-slate-900">
-                  Copyright © 2026 哲学园 | 个人技术分享站 | 严禁商业非法转载。
+                  Copyrigh
+                  <span className="relative inline-block">
+                    t
+                    <span className="pointer-events-none absolute -right-2 -top-1 text-[0.7em] leading-none">
+                      ©
+                    </span>
+                  </span>{" "}
+                  2026 哲学园 | 个人技术分享站 | 严禁商业非法转载。
                 </p>
               </div>
             </div>

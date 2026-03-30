@@ -228,7 +228,16 @@ export function HomePageContent() {
             </div>
 
             <div className="space-y-2 text-sm leading-7 text-slate-700">
-              <p>Copyright © 2026 哲学园</p>
+              <p>
+                Copyrigh
+                <span className="relative inline-block">
+                  t
+                  <span className="pointer-events-none absolute -right-2 -top-1 text-[0.7em] leading-none">
+                    ©
+                  </span>
+                </span>{" "}
+                2026 哲学园
+              </p>
               <p>本站内容仅供技术研究、学习参考与学术交流使用，不提供任何形式的商业担保。</p>
               <p>所有 AI 生成内容请用户自行核实。</p>
               <p>购买后获得的激活码仅作为本在线文档的访问凭证。</p>
