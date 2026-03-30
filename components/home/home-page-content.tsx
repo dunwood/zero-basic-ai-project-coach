@@ -3,6 +3,7 @@ import { ProjectCard } from "@/components/cards/project-card";
 import { StatusCard } from "@/components/cards/status-card";
 import { FAQSection } from "@/components/sections/faq-section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { DisclaimerDialog } from "@/components/legal/disclaimer-dialog";
 import { deploymentChecklist } from "@/lib/data/deployment-checklist";
 import { statusOptions } from "@/lib/data/status-options";
 import { listRecentProjects } from "@/lib/server/projects";
@@ -202,6 +203,31 @@ export async function HomePageContent() {
           </div>
         </div>
       </section>
+
+      <footer className="pb-12">
+        <div className="container-shell">
+          <div className="surface-panel space-y-5 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">用户服务与免责声明</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  已激活后，你仍然可以随时从这里查看完整声明。
+                </p>
+              </div>
+              <DisclaimerDialog buttonLabel="查看完整声明" />
+            </div>
+
+            <div className="space-y-2 text-sm leading-7 text-slate-700">
+              <p>Copyright © 2026 哲学园</p>
+              <p>本站内容仅供技术研究、学习参考与学术交流使用，不提供任何形式的商业担保。</p>
+              <p>所有 AI 生成内容请用户自行核实。</p>
+              <p>购买后获得的激活码仅作为本在线文档的访问凭证。</p>
+              <p>本网页为《AI 编程实战》电子教材的在线阅读版本。</p>
+              <p>严禁未经许可的商业非法转载与传播。</p>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       <FAQSection />
     </>

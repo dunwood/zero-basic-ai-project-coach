@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DisclaimerDialog } from "@/components/legal/disclaimer-dialog";
 import {
   ACCESS_ACTIVATION_COOKIE_KEY,
   ACCESS_ACTIVATION_STORAGE_KEY,
@@ -61,6 +62,8 @@ export function UnlockForm({
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activatedCode, setActivatedCode] = useState("");
   const [activatedAt, setActivatedAt] = useState("");
+  const [hasConsented, setHasConsented] = useState(false);
+
   useEffect(() => {
     const saved = readStoredActivation();
 
@@ -97,6 +100,11 @@ export function UnlockForm({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!hasConsented) {
+      setMessage("请先阅读并勾选同意声明。");
+      return;
+    }
 
     const normalized = normalizeAccessCode(input);
 
@@ -139,6 +147,26 @@ export function UnlockForm({
         </p>
       </div>
 
+      <div className="rounded-3xl border border-border bg-[#fcfbf7] p-5">
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">用户服务与免责声明</h3>
+            <div className="mt-3 space-y-3 text-sm leading-7 text-slate-700">
+              <p>
+                欢迎访问 哲学园 AI 编程研究站。
+                本站内容为作者基于个人学习与实践整理的 AI 编程经验总结与演示文档，仅供技术研究、学习参考与交流使用。
+              </p>
+              <p>
+                输入并使用访问码，即视为您已阅读并同意《用户服务与免责声明》。
+                AI 生成内容具有不确定性，请您在实际使用前自行核实其准确性、合规性与安全性。
+              </p>
+            </div>
+          </div>
+
+          <DisclaimerDialog buttonLabel="查看完整声明" />
+        </div>
+      </div>
+
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label htmlFor="access-code" className="text-sm font-medium text-slate-900">
@@ -154,15 +182,26 @@ export function UnlockForm({
           />
         </div>
 
+        <label className="flex items-start gap-3 rounded-2xl border border-border bg-white px-4 py-4 text-sm leading-6 text-slate-700">
+          <input
+            type="checkbox"
+            checked={hasConsented}
+            onChange={(event) => setHasConsented(event.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-border text-slate-900"
+          />
+          <span>我已阅读并同意《用户服务与免责声明》</span>
+        </label>
+
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"
-            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+            disabled={!hasConsented}
+            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {submitLabel}
           </button>
           <p className={`text-sm ${isUnlocked ? "text-green-700" : "text-red-600"}`}>
-            {message || "输入正确的访问码后即可通过。"}
+            {message || "请先阅读并勾选同意声明，再验证访问码。"}
           </p>
         </div>
       </form>
