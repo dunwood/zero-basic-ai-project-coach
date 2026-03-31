@@ -118,7 +118,7 @@ export function DisclaimerDialog({
                   Copyrigh
                   <span className="relative inline-block">
                     t
-                    <span className="pointer-events-none absolute -right-2 -top-1 text-[0.7em] leading-none">
+                    <span className="pointer-events-none absolute -right-1 top-0 text-[0.65em] leading-none">
                       ©
                     </span>
                   </span>{" "}
